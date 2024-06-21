@@ -1,0 +1,8 @@
+bench-ffge
+
+tmp/
+
+*.o
+*.d
+
+*.swp
