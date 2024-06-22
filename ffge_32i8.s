@@ -1,7 +1,7 @@
 [bits 64]
 default rel
 
-global ffge_32i8
+global ffge_32i4
 
 section .rodata
 
@@ -9,16 +9,19 @@ const_one	dw 1
 
 section .text
 
-ffge_32i8:
+	extern	pivot_pakmatr_32i
+
+ffge_32i4:
 	push	rbx
 	push	r12
-
-	mov	rax, rdx		; fr flags
-	or	rax, 0xff
+	push	r13
+	
+	
+	mov	r13, rdx		; fr flags
 	mov	rbx, rsi		; matrix m
 	xor	rcx, rcx		; pivot column
 	mov	r12, rdi		; size n
-	shl	r12, 5
+	shl	r12, 4
 	vpbroadcastd ymm9, [const_one]	; dv
 	vpxor	ymm10, ymm10
 
@@ -26,8 +29,26 @@ ffge_32i8:
 	xor	rdi, rdi
 .pivot_col:
 
+	push	rcx
+	push	r9
+	push	r10
+	push	r11
+	
+	mov	rdi, r12
+	shr	rdi, 4
+	mov	rsi, rbx
+	mov	rdx, rcx
+	mov	rcx, 4
+	call	pivot_pakmatr_32i
+
+	pop	r11
+	pop	r10
+	pop	r9
+	pop	rcx
+	
+
 	mov	r10, rcx
-	add	r10, 32
+	add	r10, 16
 	mov	r11, r10		; r10 = r11 = j+1
 
 	mov	rsi, rcx
@@ -46,32 +67,34 @@ ffge_32i8:
 	imul	rdx, r12
 	add	rdx, r11		; rdx = j*n + k
 
-	vmovdqa	ymm0, [rbx + rsi]
-	vmovdqa	ymm1, [rbx + rdi]
-	vpmulld ymm0, ymm0, [rbx + r9]
-	vpmulld ymm1, ymm1, [rbx + rdx]
-	vpsubd	ymm0, ymm0, ymm1
+	vmovdqa	xmm0, [rbx + rsi]
+	vmovdqa	xmm1, [rbx + rdi]
+	vpmulld xmm0, xmm0, [rbx + r9]
+	vpmulld xmm1, xmm1, [rbx + rdx]
+	vpsubd	xmm0, xmm0, xmm1
+
 	
-	vmovdqa	[rbx + r9], ymm0
+	vmovdqa	[rbx + r9], xmm0
 		
-	add	r11, 32
+	add	r11, 16
 	cmp	r11, r12
 	jl	.lk
 
-	vmovdqa	[rbx + rdi], ymm10
+	vmovdqa	[rbx + rdi], xmm10
 
-	add	r10, 32
+	add	r10, 16
 	cmp	r10, r12
 	jl	.li
 
-	vmovdqa [rbx + rsi], ymm9
+	vmovdqa [rbx + rsi], xmm9
 	
-	add	rcx, 32
+	add	rcx, 16
 	cmp	rcx, r12
 	jl	.pivot_col	
 
 
 	vzeroupper
+	pop	r13
 	pop	r12
 	pop	rbx
 	ret

@@ -21,23 +21,41 @@
 
 #include "ffge.h"
 
+/* w - width of the packed matrix tensor */
+uint64_t pivot_pakmatr_32i(size_t n, int32_t *m, size_t j, size_t w)
+{
+	uint64_t fr = (UINT64_C(1) << w) - 1;
+
+	for (size_t i = 0; i < w; i++) {
+		size_t p = j;
+		while (m[i + (p*n + j)*w] == 0)
+			if (++p == n) {
+				fr &= ~(UINT64_C(1) << i);
+				goto next_matr;
+			}
+		if (p > j)
+			for (size_t k = j; k < n; k++) {
+				const size_t jk = i + (j*n + k)*w;
+				const size_t pk = i + (p*n + k)*w;
+
+				int32_t x = m[jk];
+				m[jk] = m[pk];
+				m[pk] = x;
+			}
+next_matr:
+	}
+
+	return fr;
+}
+
 int ffge_32i1(size_t n, int32_t *m)
 {
 	int32_t dv = 1;
 
 	for (size_t j = 0; j < n; j++) {
-		/* Pivot rows if needed */
-		size_t p = j;
-		while (m[p*n + j] == 0)
-			if (++p == n)
-				return -1;
-		if (p > j) {
-			for (size_t k = j; k < n; k++) {
-				int32_t x = m[j*n + k];
-				m[j*n + k] = m[p*n + k];
-				m[p*n + k] = x;
-			}
-		}
+		uint64_t fr = pivot_pakmatr_32i(n, m, j, 1);
+		if ((fr & 1) != 1)
+			return -1;
 
 		for (size_t i = j + 1; i < n; i++) {
 			for (size_t k = j + 1; k < n; k++)

@@ -39,28 +39,28 @@
 int ffge_32i1(size_t n, int32_t *m);
 
 /*
- * Perform in-place fraction-free Gaussian elimination on 8 matrices m
+ * Perform in-place fraction-free Gaussian elimination on 4 matrices m
  * of size n.
  *
  * The matrices are represented together as a continuous array of lenth n*n
- * of 8 packed double word integers: __m256i.  
+ * of 8 packed double word integers: __m128i.  
  *
  * +++ We assume the array m is aligned to 32 bytes. +++
  *
- * If 0 <= i, j < n, and 0 <= k < 8, then m[(i * n + j)*8 + k] is the
+ * If 0 <= i, j < n, and 0 <= k < 4, then m[(i * n + j)*4 + k] is the
  * (i,j)-element of the k-th matrix.
  *
  * If one of the matrices, say the k-th one, is singular, then the k-th
  * bit in fr ("full-rank") is cleared and the procedure aborts for this
  * particular matrix. Other matrices are processed further. Bits in fr 
- * beyond 0xff are unaffected.
+ * beyond 0x0f are zeroed.
  *
  * To check if any of the matrices is full-rank, simply compare the value of
- * 8 lower bits of fr to zero:
+ * 4 lower bits of fr to zero:
  *
  *	int fr;
- *	ffge_32i8(SIZE, m, &fr);
- *	if (fr & 0xff)
+ *	ffge_32i4(SIZE, m, &fr);
+ *	if (fr & 0x0f)
  *		printf("full-rank!\n");
  *
  * Retruns:
@@ -68,6 +68,6 @@ int ffge_32i1(size_t n, int32_t *m);
  *	-1	- otherwise (i.e at least one matrix is singular)
  *
  */
-int ffge_32i8(size_t n, int32_t *m, uint64_t *fr);
+int ffge_32i4(size_t n, int32_t *m, uint64_t *fr);
 
 #endif /* FFGE_H */
