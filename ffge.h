@@ -55,8 +55,8 @@ int ffge_32i(size_t n, int32_t *m);
  *	_mm256_store_si256((__m256 *)e, m[i][j]);
  *
  * If one of the matrices, say the k-th one, is singular, then the k-th
- * bit in fr (full-rank) is cleared the procedure aborts for this particular
- * matrix.  Other matrices are processed further. Bits in fr beyond 0xff are
+ * bit in fr ("full-rank") is cleared and the procedure aborts for this particular
+ * matrix. Other matrices are processed further. Bits in fr beyond 0xff are
  * unaffected.
  *
  * To check if any of the matrices is full-rank, simply compare the value of

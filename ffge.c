@@ -50,4 +50,3 @@ int ffge_32i(size_t n, int32_t *m)
 
 	return 0;
 }
-

@@ -16,7 +16,7 @@
 # --------------------------------------------------------------------------- #
 
 CC	?= gcc
-CFLAGS	+= -std=c11 -Wall -Wextra
+CFLAGS	+= -std=c11 -Wall -Wextra -O2
 AS	:= nasm
 ASFLAGS	+= -felf64 -w+all -w-reloc-rel-dword
 LDFLAGS	+=

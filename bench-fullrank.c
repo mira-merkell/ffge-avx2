@@ -25,6 +25,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include <x86intrin.h>
+
 #include "flint/fmpz.h"
 #include "flint/fmpz_mat.h"
 
@@ -32,8 +34,9 @@
 
 #define SEED (1772)
 
-#define SIZE (12)
+/* Keep the number of repetitions divisible by 8 */
 #define REPS (1<<14)
+#define SIZE (12)
 
 #define TIMEIT(acc, x) ({ 					\
 		struct timespec b, e;				\
@@ -44,8 +47,9 @@
 	})
 #define MUSREP(acc) ((double)acc * 1.0e-3 / REPS)
 
-static int32_t A[REPS][SIZE * SIZE];
-static fmpz_mat_t B[REPS];
+static fmpz_mat_t A[REPS];
+static int32_t B[REPS][SIZE * SIZE];
+static __m256i C[REPS / 8][SIZE * SIZE];
 
 int main(int argc, char **argv)
 {
@@ -56,12 +60,23 @@ int main(int argc, char **argv)
 
 	/* Initialize matrices to random integers: -1, 0, 1 */
 	for(size_t r = 0; r < REPS; r++) {
-    		fmpz_mat_init(B[r], SIZE, SIZE);
+    		fmpz_mat_init(A[r], SIZE, SIZE);
 		for (size_t i = 0; i < SIZE; i++) {
 			for (size_t j = 0; j < SIZE; j++) {
 				int32_t a = (int32_t)(rand() % 3) - 1;
-				A[r][i*SIZE + j] = a;
-				fmpz_set_si(fmpz_mat_entry(B[r], i, j), a);
+				B[r][i*SIZE + j] = a;
+				fmpz_set_si(fmpz_mat_entry(A[r], i, j), a);
+			}
+		}
+	}
+	for (size_t r = 0; r < REPS/8; r++) {
+		for (size_t i = 0; i < SIZE; i++) {
+			for (size_t j = 0; j < SIZE; j++) {
+				_Alignas(32) int32_t v[8];
+				for (size_t k = 0; k < 8; k++)
+					v[k] = B[r*8 + k][i*SIZE + j];
+				C[r][i*SIZE + j] =
+					 _mm256_load_si256((__m256i *)v);
 			}
 		}
 	}
@@ -70,22 +85,29 @@ int main(int argc, char **argv)
 	 * Measure the total time spent on LU.
 	 * Assert our implementation gives correct value.
 	 */
-	uint64_t ta = 0, tb = 0;
+	uint64_t ta, tb, tc;
+	ta = tb = tc = 0;
 	for (size_t r = 0; r < REPS; r++) {
-		int rta, rtb;
+		int rta, rtb, rtc;
 
-		TIMEIT(ta, rta = ffge_32i(SIZE, A[r]));
-		TIMEIT(tb, rtb = fmpz_mat_rank(B[r]));
+		TIMEIT(ta, rta = fmpz_mat_rank(A[r]));
+		TIMEIT(tb, rtb = ffge_32i(SIZE, B[r]));
 
-		rtb = rtb == SIZE ? 0 : -1;
+		rta = rta == SIZE ? 0 : -1;
 		assert(rta == rtb);
+
+		uint64_t fr;
+		(void) rtc;
+		if (r % 8 == 0)
+			TIMEIT(tc, rtc = ffge_32i8(SIZE, C[r/8], &fr));
 	}
 	for (size_t r = 0; r < REPS; r++)
-		fmpz_mat_clear(B[r]);
+		fmpz_mat_clear(A[r]);
 
 	printf("size: %d, reps: %d\n", SIZE, REPS);
-	printf("\tffge_32i(A)        %.3f μs\n", MUSREP(ta));
-	printf("\tfmpz_mat_rank(B)   %.3f μs\n", MUSREP(tb));
+	printf("\tfmpz_mat_rank(A)   %.3f μs\n", MUSREP(ta));
+	printf("\tffge_32i(B)        %.3f μs\n", MUSREP(tb));
+	printf("\tffge_32i8(C)       %.3f μs\n", MUSREP(tc));
 
 	return 0;
 }
