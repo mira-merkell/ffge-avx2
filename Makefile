@@ -26,7 +26,7 @@ LDLIBS	+= -lflint -lm
 # Code dependencies
 
 ffge.o:			ffge.h
-bench-fullrank:		bench-fullrank.o ffge.o 
+bench-fullrank:		bench-fullrank.o ffge.o ffge_32i8.o
 
 
 # Targets
