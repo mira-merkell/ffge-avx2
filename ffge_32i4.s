@@ -15,8 +15,7 @@ ffge_32i4:
 	push	rbx
 	push	r12
 	push	r13
-	
-	
+
 	mov	r13, rdx		; fr flags
 	mov	rbx, rsi		; matrix m
 	xor	rcx, rcx		; pivot column
@@ -25,15 +24,12 @@ ffge_32i4:
 	vpbroadcastd ymm9, [const_one]	; dv
 	vpxor	ymm10, ymm10
 
-	xor	rsi, rsi
-	xor	rdi, rdi
-.pivot_col:
-
+.pivot:
 	push	rcx
 	push	r9
 	push	r10
 	push	r11
-	
+
 	mov	rdi, r12
 	shr	rdi, 4
 	mov	rsi, rbx
@@ -45,22 +41,17 @@ ffge_32i4:
 	pop	r10
 	pop	r9
 	pop	rcx
-	
 
 	mov	r10, rcx
 	add	r10, 16
 	mov	r11, r10		; r10 = r11 = j+1
-
 	mov	rsi, rcx
 	imul	rsi, r12
 	add	rsi, rcx		; rsi = j*n + j
-	
-.li:
-	mov	rdi, r10
+.li:	mov	rdi, r10
 	imul	rdi, r12
 	add	rdi, rcx		; rdi = i*n + j
-.lk:
-	mov	r9, r10
+.lk:	mov	r9, r10
 	imul	r9, r12
 	add	r9, r11			; r9 = i*n + k
 	mov	rdx, rcx
@@ -73,25 +64,20 @@ ffge_32i4:
 	vpmulld xmm1, xmm1, [rbx + rdx]
 	vpsubd	xmm0, xmm0, xmm1
 
-	
 	vmovdqa	[rbx + r9], xmm0
-		
 	add	r11, 16
 	cmp	r11, r12
 	jl	.lk
 
 	vmovdqa	[rbx + rdi], xmm10
-
 	add	r10, 16
 	cmp	r10, r12
 	jl	.li
 
 	vmovdqa [rbx + rsi], xmm9
-	
 	add	rcx, 16
 	cmp	rcx, r12
-	jl	.pivot_col	
-
+	jl	.pivot
 
 	vzeroupper
 	pop	r13

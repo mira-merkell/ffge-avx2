@@ -27,7 +27,7 @@ LDLIBS	+= -lm
 
 ffge.o:			ffge.h
 
-bench-fullrank:		bench-fullrank.o ffge.o ffge_32i8.o
+bench-fullrank:		bench-fullrank.o ffge.o ffge_32i4.o
 
 test-ffge:		test-ffge.o ffge.o
 

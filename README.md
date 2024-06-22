@@ -36,9 +36,10 @@ Results of several benchmarks:
 * Intel Core i9-12900, 64GB RAM, Ubuntu 22.04, GCC-14.1
 
 ```text
-size: 12, reps: 16384
-	ffge32(A)          0.728 μs
-	fmpz_mat_rank(B)   1.972 μs
+size: 17, reps: 65536
+	fmpz_mat_rank(A)   4.133 μs
+	ffge_32i1(B)       1.929 μs
+	ffge_32i4(C)       0.251 μs
 bench-fullrank: OK
 ```
 

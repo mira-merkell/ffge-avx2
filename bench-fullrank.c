@@ -71,7 +71,7 @@ int main(int argc, char **argv)
 		for (size_t i = 0; i < SIZE; i++) {
 			for (size_t j = 0; j < SIZE; j++) {
 				for (size_t k = 0; k < 4; k++)
-					C[r][i*SIZE + j] = 
+					C[r][i*SIZE + j] =
 						B[r*4 + k][i*SIZE + j];
 			}
 		}
