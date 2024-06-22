@@ -16,26 +16,18 @@
 # --------------------------------------------------------------------------- #
 
 CC	?= gcc
-CFLAGS	+= -std=c11 -Wall -Wextra -O2
+CFLAGS	+= -std=c11 -O2 -Wall -Wextra
 AS	:= nasm
 ASFLAGS	+= -Ox -felf64 -w+all -w-reloc-rel-dword
 LDFLAGS	+=
-LDLIBS	+= -lm
+LDLIBS	+= -lflint -lm
 
-
-FLINT_PREFIX	:= $(HOME)/usr
-FLINT_INCLUDE	= -I$(FLINT_PREFIX)/include/flint
-FLINT_LDFLAGS	= -L$(FLINT_PREFIX)/lib -Wl,-rpath -Wl,$(FLINT_PREFIX)/lib
-FLINT_LDLIBS	= -lflint
-
-
-CFLAGS	+= $(FLINT_INCLUDE)
-LDFLAGS	+= $(FLINT_LDFLAGS)
-LDLIBS	+= $(FLINT_LDLIBS)
 
 # Code dependencies
 
-bench-ffge: bench-ffge.o
+ffge.o:		ffge.h
+
+bench-ffge: bench-ffge.o ffge.o
 
 
 # Targets

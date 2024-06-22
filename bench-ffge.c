@@ -25,8 +25,10 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "fmpz.h"
-#include "fmpz_mat.h"
+#include "flint/fmpz.h"
+#include "flint/fmpz_mat.h"
+
+#include "ffge.h"
 
 #define SIZE (12)
 #define REPS (1<<14)
@@ -39,21 +41,6 @@
 		acc += e.tv_nsec - b.tv_nsec;			\
 	})
 #define MSREP(acc) ((double)acc * 1.0e-3 / REPS)
-
-/*
- * Perform in-place fraction-free Gaussian elimination on matrix m
- * of size n.  Short-circuit if m is not full-rank.
- *
- * The matrix is represented as an array of pointers to rows,
- * for faster pivoting.
- *
- * Returns:
- *	 0	- m is full rank
- * 	-1	- otherwise
- *
- */
-int ffge(size_t n, int32_t **m);
-
 
 static int32_t A0[REPS * SIZE * SIZE];
 static int32_t *A[REPS][SIZE];
@@ -85,7 +72,7 @@ int main(int argc, char **argv)
 	for (size_t r = 0; r < REPS; r++) {
 		int rta, rtb;
 
-		TIMEIT(ta, rta = ffge(SIZE, A[r]));
+		TIMEIT(ta, rta = ffge32(SIZE, A[r]));
 		TIMEIT(tb, rtb = fmpz_mat_rank(B[r]));
 
 		rtb = rtb == SIZE ? 0 : -1;
@@ -97,35 +84,6 @@ int main(int argc, char **argv)
 	printf("size: %d, reps: %d\n", SIZE, REPS);
 	printf("fflu(A)           %.3f μs\n", MSREP(ta));
 	printf("fmpz_mat_fflu(B)  %.3f μs\n", MSREP(tb));
-
-	return 0;
-}
-
-
-int ffge(size_t n, int32_t **m)
-{
-	int32_t dv = 1;
-
-	for (size_t j = 0; j < n; j++) {
-		/* Pivot rows if needed */
-		size_t p = j;
-		while (m[p][j] == 0)
-			if (++p == n)
-				return -1;
-		if (p > j) {
-			int32_t *r = m[j];
-			m[j] = m[p];
-			m[p] = r;
-		}
-
-		for (size_t i = j + 1; i < n; i++) {
-			for (size_t k = j + 1; k < n; k++)
-				m[i][k] = (m[j][j] * m[i][k] -
-					 m[i][j] * m[j][k]) / dv;
-			m[i][j] = 0;
-		}
-		dv = m[j][j];
-	}
 
 	return 0;
 }
