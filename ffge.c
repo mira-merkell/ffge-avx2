@@ -21,29 +21,31 @@
 
 #include "ffge.h"
 
-int ffge32(size_t n, int32_t **m)
+int ffge32(size_t n, int32_t *m)
 {
 	int32_t dv = 1;
 
 	for (size_t j = 0; j < n; j++) {
 		/* Pivot rows if needed */
 		size_t p = j;
-		while (m[p][j] == 0)
+		while (m[p*n + j] == 0)
 			if (++p == n)
 				return -1;
 		if (p > j) {
-			int32_t *r = m[j];
-			m[j] = m[p];
-			m[p] = r;
+			for (size_t k = j; k < n; k++) {
+				int32_t x = m[j*n + k];
+				m[j*n + k] = m[p*n + k];
+				m[p*n + k] = x;
+			}
 		}
 
 		for (size_t i = j + 1; i < n; i++) {
 			for (size_t k = j + 1; k < n; k++)
-				m[i][k] = (m[j][j] * m[i][k] -
-					 m[i][j] * m[j][k]) / dv;
-			m[i][j] = 0;
+				m[i*n + k] = (m[j*n + j] * m[i*n + k] -
+					 m[i*n + j] * m[j*n + k]) / dv;
+			m[i*n + j] = 0;
 		}
-		dv = m[j][j];
+		dv = m[j*n + j];
 	}
 
 	return 0;

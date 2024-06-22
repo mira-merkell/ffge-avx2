@@ -42,8 +42,7 @@
 	})
 #define MUSREP(acc) ((double)acc * 1.0e-3 / REPS)
 
-static int32_t A0[REPS * SIZE * SIZE];
-static int32_t *A[REPS][SIZE];
+static int32_t A[REPS][SIZE * SIZE];
 static fmpz_mat_t B[REPS];
 
 int main(int argc, char **argv)
@@ -57,10 +56,9 @@ int main(int argc, char **argv)
 		for (size_t i = 0; i < SIZE; i++) {
 			for (size_t j = 0; j < SIZE; j++) {
 				int32_t a = (int32_t)(rand() % 3) - 1;
-				A0[(r*SIZE +  i)*SIZE + j] = a;
+				A[r][i*SIZE + j] = a;
 				fmpz_set_si(fmpz_mat_entry(B[r], i, j), a);
 			}
-			A[r][i] = A0 + (r*SIZE + i)*SIZE;
 		}
 	}
 

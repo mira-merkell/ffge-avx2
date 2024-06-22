@@ -26,14 +26,16 @@
  * Perform in-place fraction-free Gaussian elimination on matrix m
  * of size n.  Short-circuit if m is not full-rank.
  *
- * The matrix is represented as an array of pointers to rows,
- * for faster pivoting.
+ * The matrix is represented as a continuous array of n*n elements.
+ * Hence, the matrix element e = m_ij, for 0 <= i,j < n, is accessed with:
+ *
+ *	int32_t e = m[i*n + j];
  *
  * Returns:
  *	 0	- m is full rank
  * 	-1	- otherwise
  *
  */
-int ffge32(size_t n, int32_t **m);
+int ffge32(size_t n, int32_t *m);
 
 #endif /* FFGE_H */
