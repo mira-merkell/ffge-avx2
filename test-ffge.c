@@ -42,14 +42,14 @@ static int32_t MAT_ONE[SIZE * SIZE] = {
 };
 
 
-static void test_ffge_32i_rank01(void) {
+static void test_ffge_32i1_rank01(void) {
 	int rt;
 
-	rt = ffge_32i(SIZE, MAT_ZERO);
+	rt = ffge_32i1(SIZE, MAT_ZERO);
 	if (rt != -1)
 		TEST_FAIL("matrix is singular");
 
-	rt = ffge_32i(SIZE, MAT_ONE);
+	rt = ffge_32i1(SIZE, MAT_ONE);
 	if (rt != 0)
 		TEST_FAIL("full-rank matrix");
 
@@ -60,7 +60,7 @@ int main(int argc, char **argv)
 	(void)argc;
 	(void)argv;
 
-	test_ffge_32i_rank01();
+	test_ffge_32i1_rank01();
 
 	return TEST_RT;
 }
