@@ -28,13 +28,16 @@ Benchmarks
 
 Results of several benchmarks:
 
+### `bench-fullrank`
+
+* Check if a matrix has full rank
 * Intel Core i9-12900, 64GB RAM, Ubuntu 22.04, GCC-14.1
 
 ```text
-	size: 12, reps: 16384
-	ffge32(A)          0.734 μs
-	fmpz_mat_rank(B)   1.986 μs
-	  bench-ffge: OK
+size: 12, reps: 16384
+	ffge32(A)          0.728 μs
+	fmpz_mat_rank(B)   1.972 μs
+bench-fullrank: OK
 ```
 
 

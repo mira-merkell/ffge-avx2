@@ -82,8 +82,8 @@ int main(int argc, char **argv)
 		fmpz_mat_clear(B[r]);
 
 	printf("size: %d, reps: %d\n", SIZE, REPS);
-	printf("ffge32(A)          %.3f μs\n", MUSREP(ta));
-	printf("fmpz_mat_rank(B)   %.3f μs\n", MUSREP(tb));
+	printf("\tffge32(A)          %.3f μs\n", MUSREP(ta));
+	printf("\tfmpz_mat_rank(B)   %.3f μs\n", MUSREP(tb));
 
 	return 0;
 }

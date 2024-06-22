@@ -25,8 +25,8 @@ LDLIBS	+= -lflint -lm
 
 # Code dependencies
 
-ffge.o:		ffge.h
-bench-ffge: 	bench-ffge.o ffge.o
+ffge.o:			ffge.h
+bench-fullrank:		bench-fullrank.o ffge.o 
 
 
 # Targets
@@ -40,8 +40,8 @@ debug: build
 debug: CFLAGS	+= -DDEBUG -g -Og
 debug: ASFLOGS	+= -DDEBUG -g -Fdwarf
 
-PROGS	:= bench-ffge
-BENCH	:= bench-ffge
+PROGS	:= bench-fullrank
+BENCH	:= bench-fullrank
 
 build: $(PROGS)
 
@@ -49,7 +49,7 @@ bench: CFLAGS	+= -DBENCH -O3 -march=native -mavx2
 bench: ASFLAGS	+= -DBENCH
 bench: build
 	@for bb in $(BENCH); do 					\
-		./$$bb && echo "  $$bb: OK" || ( echo "  $$bb: FAIL" );	\
+		./$$bb && echo "$$bb: OK" || ( echo "$$bb: FAIL" );	\
 	done
 
 clean:
