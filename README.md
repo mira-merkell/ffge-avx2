@@ -3,7 +3,7 @@ ffge-avx2 - fraction-free Gaussian elimination
 
 Implement a SIMD version of FFGE.  Benchmark against FLINT.
 
-This is repository is WIP 🚧. The vectorized version of FFGE is incomplete.
+This repository is WIP 🚧. The vectorized version of FFGE is incomplete.
 
 Dependencies
 ------------
@@ -27,7 +27,7 @@ Consult [Makefile](./Makefile) how to set optimization flags to your liking.
 Benchmarks
 ----------
 
-Results of several benchmarks:
+Results:
 
 ### `bench-fullrank`
 
