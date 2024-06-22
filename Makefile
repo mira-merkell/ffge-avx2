@@ -50,8 +50,14 @@ debug: CFLAGS	+= -DDEBUG -g -Og
 debug: ASFLOGS	+= -DDEBUG -g -Fdwarf
 
 PROGS	:= bench-ffge
+BENCH	:= bench-ffge
 
 build: $(PROGS)
+
+bench: build
+	@for bb in $(BENCH); do 					\
+		./$$bb && echo "  $$bb: OK" || ( echo "  $$bb: FAIL" );	\
+	done
 
 clean:
 	$(RM) *.o *.d

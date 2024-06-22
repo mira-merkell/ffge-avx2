@@ -29,91 +29,104 @@
 #include "fmpz_mat.h"
 
 #define SIZE (12)
-#define REPS (10000)
+#define REPS (1<<14)
 
-int ffge(size_t n, int64_t **m);
+#define TIMEIT(acc, x) ({ 					\
+		struct timespec b, e;				\
+		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &b);	\
+		(x);						\
+		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &e);	\
+		acc += e.tv_nsec - b.tv_nsec;			\
+	})
+#define MSREP(acc) ((double)acc * 1.0e-3 / REPS)
+
+/*
+ * Perform in-place fraction-free Gaussian elimination on matrix m
+ * of size n.  Short-circuit if m is not full-rank.
+ *
+ * The matrix is represented as an array of pointers to rows,
+ * for faster pivoting.
+ *
+ * Returns:
+ *	 0	- m is full rank
+ * 	-1	- otherwise
+ *
+ */
+int ffge(size_t n, int32_t **m);
 
 
-static int64_t A0[SIZE * SIZE];
-static int64_t *A[SIZE];
+static int32_t A0[REPS * SIZE * SIZE];
+static int32_t *A[REPS][SIZE];
+static fmpz_mat_t B[REPS];
 
 int main(int argc, char **argv)
 {
 	(void)argc;
 	(void)argv;
 
-	struct timespec beg, end;
-	uint64_t lpsA = 0, lpsB = 0;
-	int singA, singB;
-
-	fmpz_t den;
-    	fmpz_mat_t B;
-    	fmpz_mat_init(B, SIZE, SIZE);
-
+	/* Initialize matrices to random integers: -1, 0, 1 */
 	for(size_t r = 0; r < REPS; r++) {
-		/* Initialize matrices */
+    		fmpz_mat_init(B[r], SIZE, SIZE);
 		for (size_t i = 0; i < SIZE; i++) {
-			A[i] = A0 + SIZE * i;
 			for (size_t j = 0; j < SIZE; j++) {
-				int64_t a = (int64_t)rand() % 8;
-				fmpz_set_si(fmpz_mat_entry(B, i, j), a);
-				A[i][j] = a;
+				int32_t a = (int32_t)rand() % 3 - 1 ;
+				A0[(r * SIZE +  i) * SIZE + j] = a;
+				fmpz_set_si(fmpz_mat_entry(B[r], i, j), a);
 			}
+			A[r][i] = A0 + (r * SIZE + i) * SIZE;
 		}
-
-#define TIMEIT(x) ({ 						\
-		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &beg);	\
-		(x);						\
-		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);	\
-	})
-
-		TIMEIT(singA = ffge(SIZE, A));
-		lpsA += end.tv_nsec - beg.tv_nsec;
-
-		TIMEIT(singB = fmpz_mat_fflu(B, den, (void *)0, B, 1));
-		lpsB += end.tv_nsec - beg.tv_nsec;
-
-		if (singA != singB)
-			printf("assert error: singA=%d, singB=%d\n",
-				singA, singB);
 	}
-	fmpz_mat_clear(B);
 
-	printf("         fflu(A), %.3f ms / rep\n",
-			(double)lpsA * 1.0e-3 / REPS);
-	printf("fmpz_mat_fflu(B), %.3f ms / rep\n",
-			(double)lpsB * 1.0e-3 / REPS);
+	/*
+	 * Measure the total time spent on LU.
+	 * Assert our implementation gives correct value.
+	 */
+	uint32_t ta = 0, tb = 0;
+	for (size_t r = 0; r < REPS; r++) {
+		int rta, rtb;
+
+		TIMEIT(ta, rta = ffge(SIZE, A[r]));
+		TIMEIT(tb, rtb = fmpz_mat_rank(B[r]));
+
+		rtb = rtb == SIZE ? 0 : -1;
+		assert(rta == rtb);
+	}
+	for (size_t r = 0; r < REPS; r++)
+		fmpz_mat_clear(B[r]);
+
+	printf("size: %d, reps: %d\n", SIZE, REPS);
+	printf("fflu(A)           %.3f μs\n", MSREP(ta));
+	printf("fmpz_mat_fflu(B)  %.3f μs\n", MSREP(tb));
 
 	return 0;
 }
 
 
-int ffge(size_t n, int64_t **m)
+int ffge(size_t n, int32_t **m)
 {
-	for (size_t j = 0; j < n ; j++) {
+	int32_t dv = 1;
 
+	for (size_t j = 0; j < n; j++) {
+		/* Pivot rows if needed */
 		size_t p = j;
 		while (m[p][j] == 0)
 			if (++p == n)
-				return 0;
+				return -1;
 		if (p > j) {
-			int64_t *r = m[j];
+			int32_t *r = m[j];
 			m[j] = m[p];
 			m[p] = r;
 		}
 
 		for (size_t i = j + 1; i < n; i++) {
-			for (size_t k = j + 1; k < n; k++) {
-				m[i][k] = m[j][j] * m[i][k] - m[i][j] * m[j][k];
-				if (j == 0)
-					continue;
-				m[i][k] /= m[j-1][j-1];
-			}
+			for (size_t k = j + 1; k < n; k++)
+				m[i][k] = (m[j][j] * m[i][k] -
+					 m[i][j] * m[j][k]) / dv;
 			m[i][j] = 0;
 		}
-
+		dv = m[j][j];
 	}
 
-	return n;
+	return 0;
 }
 
