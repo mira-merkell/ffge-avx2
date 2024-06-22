@@ -34,7 +34,7 @@
 
 /* Keep the number of repetitions divisible by 4 */
 #define REPS (1<<16)
-#define SIZE (17)
+#define SIZE (12)
 
 #define TIMEIT(acc, x) ({ 					\
 		struct timespec b, e;				\
@@ -84,8 +84,8 @@ int main(int argc, char **argv)
 	uint64_t ta, tb, tc, fr;
 	ta = tb = tc = fr = 0;
 	for (size_t r = 0; r < REPS; r++) {
-		int rta, rtb;
-		uint64_t rtc;
+		int rta, rtb, rtc;
+		(void)rtc;
 
 		TIMEIT(ta, rta = fmpz_mat_rank(A[r]));
 		TIMEIT(tb, rtb = ffge_32i1(SIZE, B[r]));
