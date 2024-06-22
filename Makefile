@@ -16,10 +16,10 @@
 # --------------------------------------------------------------------------- #
 
 CC	?= gcc
-CFLAGS	+= -std=c11 -Wall -Wextra -O3 -march=native -mavx2
+CFLAGS	+= -std=c11 -Wall -Wextra -O2
 AS	:= nasm
 ASFLAGS	+= -Ox -felf64 -w+all -w-reloc-rel-dword
-LDFLAGS	+= 
+LDFLAGS	+=
 LDLIBS	+= -lm
 
 
@@ -54,6 +54,8 @@ BENCH	:= bench-ffge
 
 build: $(PROGS)
 
+bench: CFLAGS	+= -DBENCH -O3 -march=native -mavx2
+bench: ASFLAGS	+= -DBENCH
 bench: build
 	@for bb in $(BENCH); do 					\
 		./$$bb && echo "  $$bb: OK" || ( echo "  $$bb: FAIL" );	\
