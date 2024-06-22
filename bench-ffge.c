@@ -40,7 +40,7 @@
 		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &e);	\
 		acc += e.tv_nsec - b.tv_nsec;			\
 	})
-#define MSREP(acc) ((double)acc * 1.0e-3 / REPS)
+#define MUSREP(acc) ((double)acc * 1.0e-3 / REPS)
 
 static int32_t A0[REPS * SIZE * SIZE];
 static int32_t *A[REPS][SIZE];
@@ -56,11 +56,11 @@ int main(int argc, char **argv)
     		fmpz_mat_init(B[r], SIZE, SIZE);
 		for (size_t i = 0; i < SIZE; i++) {
 			for (size_t j = 0; j < SIZE; j++) {
-				int32_t a = (int32_t)rand() % 3 - 1 ;
-				A0[(r * SIZE +  i) * SIZE + j] = a;
+				int32_t a = (int32_t)(rand() % 3) - 1;
+				A0[(r*SIZE +  i)*SIZE + j] = a;
 				fmpz_set_si(fmpz_mat_entry(B[r], i, j), a);
 			}
-			A[r][i] = A0 + (r * SIZE + i) * SIZE;
+			A[r][i] = A0 + (r*SIZE + i)*SIZE;
 		}
 	}
 
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
 	 * Measure the total time spent on LU.
 	 * Assert our implementation gives correct value.
 	 */
-	uint32_t ta = 0, tb = 0;
+	uint64_t ta = 0, tb = 0;
 	for (size_t r = 0; r < REPS; r++) {
 		int rta, rtb;
 
@@ -82,8 +82,8 @@ int main(int argc, char **argv)
 		fmpz_mat_clear(B[r]);
 
 	printf("size: %d, reps: %d\n", SIZE, REPS);
-	printf("ffge32(A)          %.3f μs\n", MSREP(ta));
-	printf("fmpz_mat_rank(B)   %.3f μs\n", MSREP(tb));
+	printf("ffge32(A)          %.3f μs\n", MUSREP(ta));
+	printf("fmpz_mat_rank(B)   %.3f μs\n", MUSREP(tb));
 
 	return 0;
 }

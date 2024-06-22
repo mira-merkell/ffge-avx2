@@ -8,7 +8,7 @@ Dependencies
 ------------
 
 * CPU supporting AVX2 instruction set extensions
-* libflint>=3.0 - [fast numerics library](https://flintlib.org).
+* libflint>=3.0 - [fast numerics library](https://flintlib.org)
 
 
 How to use it

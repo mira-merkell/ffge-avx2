@@ -26,14 +26,13 @@ LDLIBS	+= -lflint -lm
 # Code dependencies
 
 ffge.o:		ffge.h
-
-bench-ffge: bench-ffge.o ffge.o
+bench-ffge: 	bench-ffge.o ffge.o
 
 
 # Targets
+.DEFAULT_GOAL := all
 
 .PHONY: all build clean debug
-.DEFAULT_GOAL	:= all
 
 all: build
 
