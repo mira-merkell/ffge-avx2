@@ -1,5 +1,7 @@
 bench-fullrank
 
+test-ffge
+
 tmp/
 
 *.o

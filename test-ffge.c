@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * bench-ffge.c: Benchmark for a raw implementation of FFGE.                  *
+ * test-ffge.c: test implementation of fraction-free Gaussian elimination.    *
  *                                                                            *
  * Copyright 2024 ⧉⧉⧉                                                         *
  *                                                                            *
@@ -16,77 +16,51 @@
  * You should have received a copy of the GNU General Public License along    *
  * with this program.  If not, see <https://www.gnu.org/licenses/>.           *
  * -------------------------------------------------------------------------- */
-#define _XOPEN_SOURCE 700
-
-#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
 
-#include "flint/fmpz.h"
-#include "flint/fmpz_mat.h"
+#include <x86intrin.h>
 
 #include "ffge.h"
 
-#define SEED (1772)
-
-#define SIZE (12)
-#define REPS (1<<14)
-
-#define TIMEIT(acc, x) ({ 					\
-		struct timespec b, e;				\
-		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &b);	\
-		(x);						\
-		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &e);	\
-		acc += e.tv_nsec - b.tv_nsec;			\
+static int TEST_RT = 0;
+#define TEST_FAIL(...)	({						\
+		fprintf(stderr, "FAIL %s:%d \"", __FILE__, __LINE__);	\
+		fprintf(stderr, __VA_ARGS__);				\
+		fprintf(stderr, "\"\n");				\
+		TEST_RT = -1;						\
 	})
-#define MUSREP(acc) ((double)acc * 1.0e-3 / REPS)
 
-static int32_t A[REPS][SIZE * SIZE];
-static fmpz_mat_t B[REPS];
+
+#define SIZE (3)
+static int32_t MAT_ZERO[SIZE * SIZE];
+static int32_t MAT_ONE[SIZE * SIZE] = {
+	1, 0, 0,
+	0, 1, 0,
+	0, 0, 1
+};
+
+
+static void test_ffge_32i_rank01(void) {
+	int rt;
+
+	rt = ffge_32i(SIZE, MAT_ZERO);
+	if (rt != -1)
+		TEST_FAIL("matrix is singular");
+
+	rt = ffge_32i(SIZE, MAT_ONE);
+	if (rt != 0)
+		TEST_FAIL("full-rank matrix");
+
+}
 
 int main(int argc, char **argv)
 {
 	(void)argc;
 	(void)argv;
 
-	srand(SEED);
+	test_ffge_32i_rank01();
 
-	/* Initialize matrices to random integers: -1, 0, 1 */
-	for(size_t r = 0; r < REPS; r++) {
-    		fmpz_mat_init(B[r], SIZE, SIZE);
-		for (size_t i = 0; i < SIZE; i++) {
-			for (size_t j = 0; j < SIZE; j++) {
-				int32_t a = (int32_t)(rand() % 3) - 1;
-				A[r][i*SIZE + j] = a;
-				fmpz_set_si(fmpz_mat_entry(B[r], i, j), a);
-			}
-		}
-	}
-
-	/*
-	 * Measure the total time spent on LU.
-	 * Assert our implementation gives correct value.
-	 */
-	uint64_t ta = 0, tb = 0;
-	for (size_t r = 0; r < REPS; r++) {
-		int rta, rtb;
-
-		TIMEIT(ta, rta = ffge_32i(SIZE, A[r]));
-		TIMEIT(tb, rtb = fmpz_mat_rank(B[r]));
-
-		rtb = rtb == SIZE ? 0 : -1;
-		assert(rta == rtb);
-	}
-	for (size_t r = 0; r < REPS; r++)
-		fmpz_mat_clear(B[r]);
-
-	printf("size: %d, reps: %d\n", SIZE, REPS);
-	printf("\tffge_32i(A)        %.3f μs\n", MUSREP(ta));
-	printf("\tfmpz_mat_rank(B)   %.3f μs\n", MUSREP(tb));
-
-	return 0;
+	return TEST_RT;
 }
-

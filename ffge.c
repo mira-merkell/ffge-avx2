@@ -21,7 +21,7 @@
 
 #include "ffge.h"
 
-int ffge32(size_t n, int32_t *m)
+int ffge_32i(size_t n, int32_t *m)
 {
 	int32_t dv = 1;
 

@@ -38,7 +38,7 @@
  * 	-1	- otherwise
  *
  */
-int ffge32(size_t n, int32_t *m);
+int ffge_32i(size_t n, int32_t *m);
 
 /*
  * Perform in-place fraction-free Gaussian elimination on 8 matrices m

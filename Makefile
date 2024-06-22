@@ -16,43 +16,65 @@
 # --------------------------------------------------------------------------- #
 
 CC	?= gcc
-CFLAGS	+= -std=c11 -O2 -Wall -Wextra
+CFLAGS	+= -std=c11 -Wall -Wextra
 AS	:= nasm
-ASFLAGS	+= -Ox -felf64 -w+all -w-reloc-rel-dword
+ASFLAGS	+= -felf64 -w+all -w-reloc-rel-dword
 LDFLAGS	+=
-LDLIBS	+= -lflint -lm
+LDLIBS	+= -lm
 
 
 # Code dependencies
 
 ffge.o:			ffge.h
+
 bench-fullrank:		bench-fullrank.o ffge.o ffge_32i8.o
+
+test-ffge:		test-ffge.o ffge.o
+
 
 
 # Targets
 .DEFAULT_GOAL := all
 
-.PHONY: all build clean debug
+.PHONY: all \
+	build build-bench build-test \
+	clean debug \
+	test
 
-all: build
+all: build build-test
 
 debug: build
 debug: CFLAGS	+= -DDEBUG -g -Og
 debug: ASFLOGS	+= -DDEBUG -g -Fdwarf
 
-PROGS	:= bench-fullrank
-BENCH	:= bench-fullrank
-
+PROGS	:= 
 build: $(PROGS)
 
-bench: CFLAGS	+= -DBENCH -O3 -march=native -mavx2
-bench: ASFLAGS	+= -DBENCH
-bench: build
+BENCH	:= bench-fullrank
+build-bench: build $(BENCH)
+build-bench: CFLAGS	+= -DBENCH -O3 -march=native -mavx2
+build-bench: ASFLAGS	+= -DBENCH -Ox
+build-bench: LDLIBS	+= -lflint
+
+bench: build-bench 
 	@for bb in $(BENCH); do 					\
-		./$$bb && echo "$$bb: OK" || ( echo "$$bb: FAIL" );	\
+		./$$bb && echo "$$bb: OK" || ( echo "$$bb: FAIL"; exit 1 ); \
 	done
+
+
+TEST	:= test-ffge
+build-test: $(TEST)
+build-test: CFLAGS	+= -DTEST -g -Og -march=native
+build-test: ASFLAGS	+= -DTEST -g -Fdwarf
+
+test: build-test
+	@for tt in $(TEST); do						\
+		./$$tt && echo "$$tt: OK" || ( echo "$$tt: FAIL"; exit 1 ); \
+	done
+
 
 clean:
 	$(RM) *.o *.d
-	$(RM) $(PROGS)
+	$(RM) $(PROGS) $(BENCH) $(TEST)
+
 
