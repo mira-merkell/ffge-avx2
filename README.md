@@ -7,6 +7,7 @@ Implement a SIMD version of FFGE.  Benchmark agains FLINT.
 Dependencies
 ------------
 
+* CPU supporting AVX2 instruction set extensions
 * libflint>=3.0 - [fast numerics library](https://flintlib.org).
 
 
@@ -16,10 +17,25 @@ How to use it
 To run benchmarks:
 
 ```bash
-make bench
+make clean && make bench
 ```
 
-Consult [Makefile](./Makefile) to set optimization flags to your liking.
+Consult [Makefile](./Makefile) how to set optimization flags to your liking.
+
+
+Benchmarks
+----------
+
+Results of several benchmarks:
+
+* Intel Core i9-12900, 64GB RAM, Ubuntu 22.04, GCC-14.1
+
+```text
+	size: 12, reps: 16384
+	ffge32(A)          0.734 μs
+	fmpz_mat_rank(B)   1.986 μs
+	  bench-ffge: OK
+```
 
 
 References
