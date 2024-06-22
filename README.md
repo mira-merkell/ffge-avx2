@@ -3,6 +3,8 @@ ffge-avx2 - Fraction Free Gaussian Elimination
 
 Implement a SIMD version of FFGE.  Benchmark agains FLINT.
 
+This is a work in progress 🚧. The vectorized version of FFGE hasn't been
+implemented yet.
 
 Dependencies
 ------------
