@@ -1,4 +1,4 @@
-ffge-avx2 - Fraction Free Gaussian Elimination
+ffge-avx2 - fraction-free Gaussian elimination
 ==============================================
 
 Implement a SIMD version of FFGE.  Benchmark agains FLINT.
