@@ -43,7 +43,7 @@ int ffge_32i1(size_t n, int32_t *m);
  * of size n.
  *
  * The matrices are represented together as a continuous array of lenth n*n
- * of 8 packed double word integers: __m128i.  
+ * of 4 packed double word integers: __m128i.  
  *
  * +++ We assume the array m is aligned to 32 bytes. +++
  *
