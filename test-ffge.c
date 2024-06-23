@@ -20,8 +20,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include <x86intrin.h>
-
 #include "ffge.h"
 
 static int TEST_RT = 0;
@@ -54,21 +52,15 @@ static void test_ffge_32i1_rank01(void) {
 
 	rt = ffge_32i1(SIZE, MAT_ZERO, &rnk);
 	if (rt != 0 || rnk != 0)
-		TEST_FAIL("matrix is singular");
+		TEST_FAIL("zero");
 
 	rt = ffge_32i1(SIZE, MAT_ONE, &rnk);
 	if (rt != 1 || rnk != 3)
-		TEST_FAIL("full-rank matrix");
+		TEST_FAIL("one");
 
 	rt = ffge_32i1(SIZE, MAT_TWO, &rnk);
-	if (rt != 0 || rnk != 2) {
-		for (int i = 0; i < 3; i++) {
-			for (int j = 0; j < 3 ; j++)
-				printf("%d ", MAT_TWO[i*3 + j]);
-			printf("\n");
-		}
-		TEST_FAIL("wrong rank");
-	}
+	if (rt != 0 || rnk != 2)
+		TEST_FAIL("rank 2");
 
 }
 
