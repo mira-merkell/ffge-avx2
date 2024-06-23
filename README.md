@@ -41,9 +41,9 @@ Results:
 
 ```text
 size: 12, reps: 65536
-	fmpz_mat_rank(A)   2.000 μs
-	ffge_64i1(B)       0.615 μs
-	ffge_64i4(C)       0.123 μs
+	fmpz_mat_rank(A)   2.011 μs
+	ffge_64i1(B)       0.603 μs
+	ffge_64i8(C)       0.316 μs
 bench-fullrank: OK
 ```
 

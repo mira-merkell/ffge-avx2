@@ -48,7 +48,7 @@
 static fmpz_mat_t A[REPS];
 static int64_t B[REPS][SIZE * SIZE];
 
-#define WIDTH (4)
+#define WIDTH (8)
 static _Alignas(32) int64_t C[REPS / WIDTH][SIZE * SIZE * WIDTH];
 
 int main(int argc, char **argv)
@@ -87,7 +87,7 @@ int main(int argc, char **argv)
 	ta = tb = tc = 0;
 	for (size_t r = 0; r < REPS; r++) {
 		long rta;
-		size_t rnk;
+		size_t rnk, rnkC[WIDTH];
 
 		TIMEIT(ta, rta = fmpz_mat_rank(A[r]));
 		TIMEIT(tb, ffge_64i1(SIZE, B[r], &rnk));
@@ -95,7 +95,7 @@ int main(int argc, char **argv)
 		assert((size_t)rta == rnk);
 
 		if (r % WIDTH == 0) {
-			TIMEIT(tc, ffge_64i4(SIZE, C[r/WIDTH], (void*)0));
+			TIMEIT(tc, ffge_64i8(SIZE, C[r/WIDTH], &rnkC));
 		}
 	}
 	for (size_t r = 0; r < REPS; r++)
@@ -105,7 +105,7 @@ int main(int argc, char **argv)
 	printf("size: %d, reps: %d\n", SIZE, REPS);
 	printf("\tfmpz_mat_rank(A)   %.3f μs\n", MUSREP(ta));
 	printf("\tffge_64i1(B)       %.3f μs\n", MUSREP(tb));
-	printf("\tffge_64i4(C)       %.3f μs\n", MUSREP(tc));
+	printf("\tffge_64i8(C)       %.3f μs\n", MUSREP(tc));
 
 	return 0;
 }

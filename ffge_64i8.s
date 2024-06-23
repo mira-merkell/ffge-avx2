@@ -1,5 +1,5 @@
 ; --------------------------------------------------------------------------- ;
-; ffge_64i4.s: Perform FFGE on 4 packed matrices.                             ;
+; ffge_64i8.s: Perform FFGE on 8 packed matrices.                             ;
 ;                                                                             ;
 ; Copyright 2024 ⧉⧉⧉                                                          ;
 ;                                                                             ;
@@ -19,86 +19,113 @@
 [bits 64]
 default rel
 
-global ffge_64i4
+global ffge_64i8
 
 section .rodata
 
-const_one	dw 1
 
 section .text
 
 	extern	ffge_pivmtr_64i
 
-ffge_64i4:
+ffge_64i8:
 	push	rbx
 	push	r12
-	push	r13
+	push	rdx
 
-	mov	r13, rdx		; fr flags
-	mov	rbx, rsi		; matrix m
-	xor	rcx, rcx		; pivot column
-	mov	r12, rdi		; size n
-	shl	r12, 5
-	vpbroadcastd ymm9, [const_one]	; dv
+	mov	r12, rdi
+	mov	rbx, rsi
+
+	xor	rax, rax
+	xor	rcx, rcx
 	vpxor	ymm10, ymm10
-
-.pivot:
+.l_pc_in:
+	push	rax
 	push	rcx
+	push	r8
 	push	r9
-	push	r10
-	push	r11
-
 	mov	rdi, r12
-	shr	rdi, 5
 	mov	rsi, rbx
-	mov	rdx, rcx
-	mov	rcx, 5
-	call	ffge_pivmtr_64i
-
-	pop	r11
-	pop	r10
+	mov	rdx, rax
+	mov	r9, 8
+	call 	ffge_pivmtr_64i
+	mov	r10, rax
+	pop	r8
 	pop	r9
 	pop	rcx
+	pop	rax
+	test	r10, r10
+	jne	.l_pc_out
+	
+	mov	r8, rcx
+	add	r8, 1
 
-	mov	r10, rcx
-	add	r10, 32
-	mov	r11, r10		; r10 = r11 = j+1
-	mov	rsi, rcx
+	mov	rsi, rax
 	imul	rsi, r12
-	add	rsi, rcx		; rsi = j*n + j
-.li:	mov	rdi, r10
+	add	rsi, rcx
+	shl	rsi, 6
+	vmovdqa	ymm2, [rbx + rsi]
+	vmovdqa	ymm6, [rbx + rsi + 32]
+.l1:
+	mov	r9, rax
+	add	r9, 1
+
+	mov	rdi, rax
 	imul	rdi, r12
-	add	rdi, rcx		; rdi = i*n + j
-.lk:	mov	r9, r10
-	imul	r9, r12
-	add	r9, r11			; r9 = i*n + k
-	mov	rdx, rcx
-	imul	rdx, r12
-	add	rdx, r11		; rdx = j*n + k
+	add	rdi, r8
+	shl	rdi, 6
+	vmovdqa	ymm3, [rbx + rdi]
+	vmovdqa	ymm7, [rbx + rdi + 32]
+.l2:
 
-	vmovdqa	ymm0, [rbx + rsi]
-	vmovdqa	ymm1, [rbx + rdi]
-	vpmulld ymm0, ymm0, [rbx + r9]
-	vpmulld ymm1, ymm1, [rbx + rdx]
-	vpsubd	ymm0, ymm0, ymm1
+	mov	rsi, r9
+	imul	rsi, r12
+	add	rsi, r8
+	shl	rsi, 6
+	vpmuldq ymm0, ymm2, [rbx + rsi]
+	vpmuldq ymm4, ymm6, [rbx + rsi + 32]
+	; TODO: modulo prime
 
-	vmovdqa	[rbx + r9], ymm0
-	add	r11, 32
-	cmp	r11, r12
-	jl	.lk
+	mov	r10, r9
+	imul	r10, r12
+	add	r10, rcx
+	shl	r10, 6
+	vpmuldq	ymm1, ymm3, [rbx + r11]
+	vpmuldq	ymm5, ymm7, [rbx + r11]
 
-	vmovdqa	[rbx + rdi], ymm10
-	add	r10, 32
-	cmp	r10, r12
-	jl	.li
+	vpsubq	ymm0, ymm0, ymm1
+	vpsubq	ymm4, ymm4, ymm5
+	vmovdqa	[rbx + rsi], ymm0
+	vmovdqa	[rbx + rsi + 32], ymm4
+	inc	r9
+	cmp	r9, r12
+	jb	.l2
 
-	vmovdqa [rbx + rsi], ymm9
-	add	rcx, 32
+	vmovdqa [rbx + rdi], ymm10
+	vmovdqa [rbx + rdi + 32], ymm10
+	inc	r8
+	cmp	r8, r12
+	jb	.l1
+	
+	inc	rax
+
+.l_pc_out:
+	inc	rcx
 	cmp	rcx, r12
-	jl	.pivot
+	jb	.l_pc_in
+
+	pop	rdx
+	test	rdx, rdx
+	jz	.rnk_null
+	mov	[rdx], rax
+.rnk_null:
+	sub	r12, rax
+	xor	rax, rax
+	test	r12, r12
+	setz	al
 
 	vzeroupper
-	pop	r13
 	pop	r12
 	pop	rbx
 	ret
+

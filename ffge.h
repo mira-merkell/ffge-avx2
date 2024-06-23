@@ -51,7 +51,7 @@ int ffge_64i1(size_t n, int64_t *m, size_t *rnk);
  *                                                                            *
  *           +++ We assume the array m is aligned to 32 bytes. +++            *
  *                                                                            *
- * If 0 <= i, j < n, and 0 <= k < 4, then m[(i * n + j)*4 + k] is the         *
+ * If 0 <= i, j < n, and 0 <= k < 8, then m[(i * n + j)*8 + k] is the         *
  * (i,j)-element of the k-th matrix.                                          *
  *                                                                            *
  * If rnk is not null, the funtion stores the rank of each matrix             *
@@ -61,6 +61,6 @@ int ffge_64i1(size_t n, int64_t *m, size_t *rnk);
  *      0       - if all matrices are singular                                *
  *      1       - if at least one matrix is full-rank                         *
  * -------------------------------------------------------------------------- */
-void ffge_64i4(size_t n, int64_t *m, uint64_t (*rnk)[4]);
+void ffge_64i8(size_t n, int64_t *m, uint64_t (*rnk)[8]);
 
 #endif /* FFGE_H */
