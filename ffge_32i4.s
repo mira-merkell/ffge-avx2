@@ -27,7 +27,7 @@ const_one	dw 1
 
 section .text
 
-	extern	pivot_pakmatr_32i
+	extern	ffge_pivmtr_32i
 
 ffge_32i4:
 	push	rbx
@@ -53,7 +53,7 @@ ffge_32i4:
 	mov	rsi, rbx
 	mov	rdx, rcx
 	mov	rcx, 4
-	call	pivot_pakmatr_32i
+	call	ffge_pivmtr_32i
 
 	pop	r11
 	pop	r10

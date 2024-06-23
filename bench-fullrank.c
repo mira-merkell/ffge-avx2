@@ -47,7 +47,9 @@
 
 static fmpz_mat_t A[REPS];
 static int32_t B[REPS][SIZE * SIZE];
-static _Alignas(32) int32_t C[REPS / 4][SIZE * SIZE * 4];
+
+#define WIDTH (4)
+static _Alignas(32) int32_t C[REPS / WIDTH][SIZE * SIZE * WIDTH];
 
 int main(int argc, char **argv)
 {
@@ -67,12 +69,12 @@ int main(int argc, char **argv)
 			}
 		}
 	}
-	for (size_t r = 0; r < REPS/4; r++) {
+	for (size_t r = 0; r < REPS/WIDTH; r++) {
 		for (size_t i = 0; i < SIZE; i++) {
 			for (size_t j = 0; j < SIZE; j++) {
-				for (size_t k = 0; k < 4; k++)
+				for (size_t k = 0; k < WIDTH; k++)
 					C[r][i*SIZE + j] =
-						B[r*4 + k][i*SIZE + j];
+						B[r*WIDTH + k][i*SIZE + j];
 			}
 		}
 	}
@@ -81,20 +83,19 @@ int main(int argc, char **argv)
 	 * Measure the total time spent on LU.
 	 * Assert our implementation gives correct value.
 	 */
-	uint64_t ta, tb, tc, fr;
-	ta = tb = tc = fr = 0;
+	uint64_t ta, tb, tc;
+	ta = tb = tc = 0;
 	for (size_t r = 0; r < REPS; r++) {
-		int rta, rtb, rtc;
-		(void)rtc;
+		long rta;
+		size_t rnk;
 
 		TIMEIT(ta, rta = fmpz_mat_rank(A[r]));
-		TIMEIT(tb, rtb = ffge_32i1(SIZE, B[r]));
+		TIMEIT(tb, ffge_32i1(SIZE, B[r], &rnk));
 
-		rta = rta == SIZE ? 0 : -1;
-		assert(rta == rtb);
+		assert((size_t)rta == rnk);
 
-		if (r % 4 == 0) {
-			TIMEIT(tc, rtc = ffge_32i4(SIZE, C[r/4], &fr));
+		if (r % WIDTH == 0) {
+			TIMEIT(tc, ffge_32i4(SIZE, C[r/WIDTH], (void*)0));
 		}
 	}
 	for (size_t r = 0; r < REPS; r++)

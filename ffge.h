@@ -24,50 +24,41 @@
 
 /*
  * Perform in-place fraction-free Gaussian elimination on matrix m
- * of size n.  Short-circuit if m is not full-rank.
+ * of size n.
  *
  * The matrix is represented as a continuous array of n*n elements.
- * Hence, the matrix element e = m_ij, for 0 <= i,j < n, is accessed with:
+ * The matrix element e = m_ij, for 0 <= i,j < n, is accessed with:
  *
  *	int32_t e = m[i*n + j];
  *
+ * If the pointer rnk is not null, the rank of m is stored.
+ *
  * Returns:
- *	 0	- m is full rank
- * 	-1	- otherwise
+ *	0	- if the matrix is singular
+ *	1	- if the matrix is full-rank
  *
  */
-int ffge_32i1(size_t n, int32_t *m);
+int ffge_32i1(size_t n, int32_t *m, size_t *rnk);
 
 /*
  * Perform in-place fraction-free Gaussian elimination on 4 matrices m
  * of size n.
  *
- * The matrices are represented together as a continuous array of lenth n*n
- * of 4 packed double word integers: __m128i.  
+ * The matrices are represented together as a continuous array
+ * of lenth n*n*4.
  *
  * +++ We assume the array m is aligned to 32 bytes. +++
  *
  * If 0 <= i, j < n, and 0 <= k < 4, then m[(i * n + j)*4 + k] is the
  * (i,j)-element of the k-th matrix.
  *
- * If one of the matrices, say the k-th one, is singular, then the k-th
- * bit in fr ("full-rank") is cleared and the procedure aborts for this
- * particular matrix. Other matrices are processed further. Bits in fr 
- * beyond 0x0f are zeroed.
- *
- * To check if any of the matrices is full-rank, simply compare the value of
- * 4 lower bits of fr to zero:
- *
- *	int fr;
- *	ffge_32i4(SIZE, m, &fr);
- *	if (fr & 0x0f)
- *		printf("full-rank!\n");
+ * If rnk is not null, the funtion stores the rank of each matrix
+ * in the array.
  *
  * Retruns:
- * 	 0	- if all matrices in m are full-rank
- *	-1	- otherwise (i.e at least one matrix is singular)
- *
+ *	0	- if all matrices are singular
+ *	1	- if at least one matrix is full-rank
  */
-int ffge_32i4(size_t n, int32_t *m, uint64_t *fr);
+void ffge_32i4(size_t n, int32_t *m, uint64_t (*rnk)[4]);
 
 #endif /* FFGE_H */
