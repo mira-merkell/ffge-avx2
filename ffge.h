@@ -27,12 +27,12 @@
 
 /* -------------------------------------------------------------------------- *
  * Perform in-place fraction-free Gaussian elimination on matrix m            *
- * of size n.  The underlying field is interegs mod FFGE_MAGPRIM.             *
+ * of size n.  The underlying field is integers mod FFGE_MAGPRIM.             *
  *                                                                            *
  * The matrix is represented as a continuous array of n*n elements.           *
  * The matrix element e = m_ij, for 0 <= i,j < n, is accessed with:           *
  *                                                                            *
- *	int64_t e = m[i*n + j];                                               *
+ *      int64_t e = m[i*n + j];                                               *
  *                                                                            *
  * If the pointer rnk is not null, the rank of m is stored.                   *
  *                                                                            *
@@ -43,9 +43,8 @@
 int ffge_64i1(size_t n, int64_t *m, size_t *rnk);
 
 /* -------------------------------------------------------------------------- *
- * Perform in-place fraction-free Gaussian elimination on                     *
- * 4 matrices m of size n. The underlying field is integers mod               *
- * FFGE_MAGPRIM.                                                              *
+ * Perform in-place fraction-free Gaussian elimination on 4 matrices m        *
+ * of size n. The underlying field is integers mod FFGE_MAGPRIM.              *
  *                                                                            *
  * The matrices are represented together as a continuous array                *
  * of lenth n*n*4.                                                            *
