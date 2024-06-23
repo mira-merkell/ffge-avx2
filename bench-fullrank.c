@@ -46,10 +46,10 @@
 #define MUSREP(acc) ((double)acc * 1.0e-3 / REPS)
 
 static fmpz_mat_t A[REPS];
-static int32_t B[REPS][SIZE * SIZE];
+static int64_t B[REPS][SIZE * SIZE];
 
 #define WIDTH (4)
-static _Alignas(32) int32_t C[REPS / WIDTH][SIZE * SIZE * WIDTH];
+static _Alignas(32) int64_t C[REPS / WIDTH][SIZE * SIZE * WIDTH];
 
 int main(int argc, char **argv)
 {
@@ -63,7 +63,7 @@ int main(int argc, char **argv)
     		fmpz_mat_init(A[r], SIZE, SIZE);
 		for (size_t i = 0; i < SIZE; i++) {
 			for (size_t j = 0; j < SIZE; j++) {
-				int32_t a = (int32_t)(rand() % 3) - 1;
+				int64_t a = (int64_t)(rand() % 3) - 1;
 				B[r][i*SIZE + j] = a;
 				fmpz_set_si(fmpz_mat_entry(A[r], i, j), a);
 			}
@@ -90,12 +90,12 @@ int main(int argc, char **argv)
 		size_t rnk;
 
 		TIMEIT(ta, rta = fmpz_mat_rank(A[r]));
-		TIMEIT(tb, ffge_32i1(SIZE, B[r], &rnk));
+		TIMEIT(tb, ffge_64i1(SIZE, B[r], &rnk));
 
 		assert((size_t)rta == rnk);
 
 		if (r % WIDTH == 0) {
-			TIMEIT(tc, ffge_32i4(SIZE, C[r/WIDTH], (void*)0));
+			TIMEIT(tc, ffge_64i4(SIZE, C[r/WIDTH], (void*)0));
 		}
 	}
 	for (size_t r = 0; r < REPS; r++)
@@ -104,8 +104,8 @@ int main(int argc, char **argv)
 
 	printf("size: %d, reps: %d\n", SIZE, REPS);
 	printf("\tfmpz_mat_rank(A)   %.3f μs\n", MUSREP(ta));
-	printf("\tffge_32i1(B)       %.3f μs\n", MUSREP(tb));
-	printf("\tffge_32i4(C)       %.3f μs\n", MUSREP(tc));
+	printf("\tffge_64i1(B)       %.3f μs\n", MUSREP(tb));
+	printf("\tffge_64i4(C)       %.3f μs\n", MUSREP(tc));
 
 	return 0;
 }

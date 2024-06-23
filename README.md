@@ -1,7 +1,8 @@
 ffge-avx2 - fraction-free Gaussian elimination
 ==============================================
 
-Implement a SIMD version of FFGE.  Benchmark against FLINT.
+Implement a SIMD version of FFGE on a finite field.
+Benchmark against FLINT.
 
 This repository is WIP 🚧. The vectorized version of FFGE is incomplete.
 
@@ -36,9 +37,9 @@ Results:
 
 ```text
 size: 12, reps: 65536
-	fmpz_mat_rank(A)   1.993 μs
-	ffge_32i1(B)       0.759 μs
-	ffge_32i4(C)       0.099 μs
+	fmpz_mat_rank(A)   2.000 μs
+	ffge_64i1(B)       0.615 μs
+	ffge_64i4(C)       0.123 μs
 bench-fullrank: OK
 ```
 

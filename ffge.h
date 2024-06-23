@@ -22,43 +22,46 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/*
- * Perform in-place fraction-free Gaussian elimination on matrix m
- * of size n.
- *
- * The matrix is represented as a continuous array of n*n elements.
- * The matrix element e = m_ij, for 0 <= i,j < n, is accessed with:
- *
- *	int32_t e = m[i*n + j];
- *
- * If the pointer rnk is not null, the rank of m is stored.
- *
- * Returns:
- *	0	- if the matrix is singular
- *	1	- if the matrix is full-rank
- *
- */
-int ffge_32i1(size_t n, int32_t *m, size_t *rnk);
+/* Magic prime: 2^31 - 1. Integer multiplication fits into int64_t. */
+#define FFGE_MAGPRIM INT64_C(2147483647)
 
-/*
- * Perform in-place fraction-free Gaussian elimination on 4 matrices m
- * of size n.
- *
- * The matrices are represented together as a continuous array
- * of lenth n*n*4.
- *
- * +++ We assume the array m is aligned to 32 bytes. +++
- *
- * If 0 <= i, j < n, and 0 <= k < 4, then m[(i * n + j)*4 + k] is the
- * (i,j)-element of the k-th matrix.
- *
- * If rnk is not null, the funtion stores the rank of each matrix
- * in the array.
- *
- * Retruns:
- *	0	- if all matrices are singular
- *	1	- if at least one matrix is full-rank
- */
-void ffge_32i4(size_t n, int32_t *m, uint64_t (*rnk)[4]);
+/* -------------------------------------------------------------------------- *
+ * Perform in-place fraction-free Gaussian elimination on matrix m            *
+ * of size n.  The underlying field is interegs mod FFGE_MAGPRIM.             *
+ *                                                                            *
+ * The matrix is represented as a continuous array of n*n elements.           *
+ * The matrix element e = m_ij, for 0 <= i,j < n, is accessed with:           *
+ *                                                                            *
+ *	int64_t e = m[i*n + j];                                               *
+ *                                                                            *
+ * If the pointer rnk is not null, the rank of m is stored.                   *
+ *                                                                            *
+ * Returns:                                                                   *
+ *      0       - if the matrix is singular                                   *
+ *      1       - if the matrix is full-rank                                  *
+ * -------------------------------------------------------------------------- */
+int ffge_64i1(size_t n, int64_t *m, size_t *rnk);
+
+/* -------------------------------------------------------------------------- *
+ * Perform in-place fraction-free Gaussian elimination on                     *
+ * 4 matrices m of size n. The underlying field is integers mod               *
+ * FFGE_MAGPRIM.                                                              *
+ *                                                                            *
+ * The matrices are represented together as a continuous array                *
+ * of lenth n*n*4.                                                            *
+ *                                                                            *
+ *           +++ We assume the array m is aligned to 32 bytes. +++            *
+ *                                                                            *
+ * If 0 <= i, j < n, and 0 <= k < 4, then m[(i * n + j)*4 + k] is the         *
+ * (i,j)-element of the k-th matrix.                                          *
+ *                                                                            *
+ * If rnk is not null, the funtion stores the rank of each matrix             *
+ * in the array.                                                              *
+ *                                                                            *
+ * Retruns:                                                                   *
+ *      0       - if all matrices are singular                                *
+ *      1       - if at least one matrix is full-rank                         *
+ * -------------------------------------------------------------------------- */
+void ffge_64i4(size_t n, int64_t *m, uint64_t (*rnk)[4]);
 
 #endif /* FFGE_H */

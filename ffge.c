@@ -22,8 +22,8 @@
 #include "ffge.h"
 
 /* w - width of the packed matrix tensor */
-uint64_t ffge_pivmtr_32i(size_t n, int32_t *m,
-				 size_t pr, size_t pc, uint32_t w)
+uint64_t ffge_pivmtr_64i(size_t n, int64_t *m,
+				 size_t pr, size_t pc, uint64_t w)
 {
 	uint64_t fl = 0;
 	for (size_t k = 0; k < w; k++) {
@@ -39,7 +39,7 @@ uint64_t ffge_pivmtr_32i(size_t n, int32_t *m,
 				const size_t rj = k + (pr*n + j)*w;
 				const size_t ij = k + ( i*n + j)*w;
 
-				const int32_t x = m[rj];
+				const int64_t x = m[rj];
 				m[rj] = m[ij];
 				m[ij] = x;
 			}
@@ -48,30 +48,27 @@ uint64_t ffge_pivmtr_32i(size_t n, int32_t *m,
 	return fl;
 }
 
-int ffge_32i1(size_t n, int32_t *m, size_t *rnk)
+int ffge_64i1(size_t n, int64_t *m, size_t *rnk)
 {
-	int32_t dv = 1;
 
-	size_t pc, pr = 0;	// pivot col, row
+	size_t pc = 0, pr = 0;	// pivot col, row
 	for (pc = 0; pc < n; pc++) {
-		if (ffge_pivmtr_32i(n, m, pr, pc, 1) != 0)
+		if (ffge_pivmtr_64i(n, m, pr, pc, 1) != 0)
 			continue;
 		for (size_t i = pr + 1; i < n; i++) {
-			for (size_t k = pc + 1; k < n; k++ )
+			for (size_t k = pc + 1; k < n; k++ ){
 				m[i*n + k] = (
 						m[pr*n + pc] * m[i *n + k] -
 						m[i *n + pc] * m[pr*n + k]
-					) / dv;
+					) % FFGE_MAGPRIM;
+			}
 			m[i*n + pc] = 0;
 		}
-		dv = m[pr*n + pc];
 		pr++;
 	}
-
-	size_t r = n - (pc - pr);
 	if (rnk)
-		*rnk = r;
+		*rnk = pr;
 
-	return r == n;
+	return pr == n;
 }
 

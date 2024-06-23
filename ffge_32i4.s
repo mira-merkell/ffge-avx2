@@ -1,5 +1,5 @@
 ; --------------------------------------------------------------------------- ;
-; ffge_32i4.s: Perform FFGE on 4 packed matrices.                             ;
+; ffge_64i4.s: Perform FFGE on 4 packed matrices.                             ;
 ;                                                                             ;
 ; Copyright 2024 ⧉⧉⧉                                                          ;
 ;                                                                             ;
@@ -19,7 +19,7 @@
 [bits 64]
 default rel
 
-global ffge_32i4
+global ffge_64i4
 
 section .rodata
 
@@ -27,9 +27,9 @@ const_one	dw 1
 
 section .text
 
-	extern	ffge_pivmtr_32i
+	extern	ffge_pivmtr_64i
 
-ffge_32i4:
+ffge_64i4:
 	push	rbx
 	push	r12
 	push	r13
@@ -38,7 +38,7 @@ ffge_32i4:
 	mov	rbx, rsi		; matrix m
 	xor	rcx, rcx		; pivot column
 	mov	r12, rdi		; size n
-	shl	r12, 4
+	shl	r12, 5
 	vpbroadcastd ymm9, [const_one]	; dv
 	vpxor	ymm10, ymm10
 
@@ -49,11 +49,11 @@ ffge_32i4:
 	push	r11
 
 	mov	rdi, r12
-	shr	rdi, 4
+	shr	rdi, 5
 	mov	rsi, rbx
 	mov	rdx, rcx
-	mov	rcx, 4
-	call	ffge_pivmtr_32i
+	mov	rcx, 5
+	call	ffge_pivmtr_64i
 
 	pop	r11
 	pop	r10
@@ -61,7 +61,7 @@ ffge_32i4:
 	pop	rcx
 
 	mov	r10, rcx
-	add	r10, 16
+	add	r10, 32
 	mov	r11, r10		; r10 = r11 = j+1
 	mov	rsi, rcx
 	imul	rsi, r12
@@ -76,24 +76,24 @@ ffge_32i4:
 	imul	rdx, r12
 	add	rdx, r11		; rdx = j*n + k
 
-	vmovdqa	xmm0, [rbx + rsi]
-	vmovdqa	xmm1, [rbx + rdi]
-	vpmulld xmm0, xmm0, [rbx + r9]
-	vpmulld xmm1, xmm1, [rbx + rdx]
-	vpsubd	xmm0, xmm0, xmm1
+	vmovdqa	ymm0, [rbx + rsi]
+	vmovdqa	ymm1, [rbx + rdi]
+	vpmulld ymm0, ymm0, [rbx + r9]
+	vpmulld ymm1, ymm1, [rbx + rdx]
+	vpsubd	ymm0, ymm0, ymm1
 
-	vmovdqa	[rbx + r9], xmm0
-	add	r11, 16
+	vmovdqa	[rbx + r9], ymm0
+	add	r11, 32
 	cmp	r11, r12
 	jl	.lk
 
-	vmovdqa	[rbx + rdi], xmm10
-	add	r10, 16
+	vmovdqa	[rbx + rdi], ymm10
+	add	r10, 32
 	cmp	r10, r12
 	jl	.li
 
-	vmovdqa [rbx + rsi], xmm9
-	add	rcx, 16
+	vmovdqa [rbx + rsi], ymm9
+	add	rcx, 32
 	cmp	rcx, r12
 	jl	.pivot
 
