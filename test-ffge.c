@@ -20,56 +20,115 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include <flint/fmpz.h>
+#include <flint/fmpz_mat.h>
+
 #include "ffge.h"
+#include "xoshiro256ss.h"
 
 static int TEST_RT = 0;
 #define TEST_FAIL(...)	({						\
-		fprintf(stderr, "FAIL %s:%d \"", __FILE__, __LINE__);	\
+		fprintf(stderr, "FAIL %s:%d, %s() \"", 			\
+			__FILE__, __LINE__, __func__);			\
 		fprintf(stderr, __VA_ARGS__);				\
 		fprintf(stderr, "\"\n");				\
 		TEST_RT = -1;						\
 	})
 
+#define SEED UINT64_C(22349)
+static struct xoshiro256ss RNG;
 
 #define SIZE (3)
-static int32_t MAT_ZERO[SIZE * SIZE];
+static int32_t MAT_ZER[SIZE * SIZE];
 static int32_t MAT_ONE[SIZE * SIZE] = {
-	1, 0, 0,
-	0, 1, 0,
-	0, 0, 1
+	1, 0, 2,
+	1, 0, 2,
+	1, 0, 2
 };
-
 static int32_t MAT_TWO[SIZE * SIZE] = {
 	0, 0, 2,
 	0, 0, 1,
 	0, 1, 0
 };
+static int32_t MAT_THR[SIZE * SIZE] = {
+	1, 0, 0,
+	1, 2, 0,
+	1, 3, 4
+};
 
 
-static void test_ffge_32i1_rank01(void) {
-	int rt;
-	size_t rnk;
+static void test_ffge_32i1_rank03(void)
+{
 
-	rt = ffge_32i1(SIZE, MAT_ZERO, &rnk);
-	if (rt != 0 || rnk != 0)
-		TEST_FAIL("zero");
+	int32_t m[SIZE*SIZE];
 
-	rt = ffge_32i1(SIZE, MAT_ONE, &rnk);
-	if (rt != 1 || rnk != 3)
-		TEST_FAIL("one");
+#define TEST_MAT(MAT, ex_rt, ex_rnk)	({				\
+		for (int i = 0; i < SIZE*SIZE; i++)			\
+			m[i] = MAT[i];					\
+		size_t rnk;						\
+		int rt = ffge_32i1(SIZE, m, &rnk);			\
+		if (rt != ex_rt || rnk != ex_rnk)			\
+			TEST_FAIL("rank: %zu (ex: %d), rt: %d (ex: %d)",\
+				rnk, ex_rnk, rt, ex_rt);		\
+	})
 
-	rt = ffge_32i1(SIZE, MAT_TWO, &rnk);
-	if (rt != 0 || rnk != 2)
-		TEST_FAIL("rank 2");
-
+	TEST_MAT(MAT_ZER, 0, 0);
+	TEST_MAT(MAT_ONE, 0, 1);
+	TEST_MAT(MAT_TWO, 0, 2);
+	TEST_MAT(MAT_THR, 1, 3);
+#undef TEST_MAT
 }
+
+
+/* Compute rank of 12x12 matrix with entries -1, 0, 1.
+ * Compare result with flint.
+ */
+#define REPS	(9999)
+#undef SIZE
+#define SIZE	(12)
+static int32_t A[SIZE * SIZE];
+
+
+static void test_ffge_32i1_rank12(void)
+{
+	for (size_t r = 0; r < REPS; r++) {
+		fmpz_mat_t B;
+		fmpz_mat_init(B, SIZE, SIZE);
+		for (size_t i = 0; i < SIZE; i++) {
+			for (size_t j = 0; j < SIZE; j++) {
+				int32_t x = (xoshiro256ss_next(&RNG) & 3) - 1;
+				A[i*SIZE + j] = x;
+				fmpz_set_si(fmpz_mat_entry(B, i, j), x);
+			}
+		}
+
+		size_t rankA;
+		int rt = ffge_32i1(SIZE, A, &rankA);
+		int rankB = fmpz_mat_rank(B);
+
+		if (rankA < SIZE && rt != 0)
+			TEST_FAIL("rep. %zu, singular", r);
+		if (rankA == SIZE && rt != 1)
+			TEST_FAIL("rep. %zu, full-rank", r);
+
+		if (rankA != (size_t)rankB)
+			TEST_FAIL("rep. %zu, rankA: %zu, rankB: %zu",
+					r, rankA, (size_t)rankB);
+
+		fmpz_mat_clear(B);
+	}
+}
+
 
 int main(int argc, char **argv)
 {
 	(void)argc;
 	(void)argv;
 
-	test_ffge_32i1_rank01();
+	xoshiro256ss_init(&RNG, SEED);
+
+	test_ffge_32i1_rank03();
+	test_ffge_32i1_rank12();
 
 	return TEST_RT;
 }

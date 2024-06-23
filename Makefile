@@ -26,12 +26,11 @@ LDLIBS	+= -lm
 # Code dependencies
 
 ffge.o:			ffge.h
+xoshiro256ss.o:		xoshiro256ss.h
 
 bench-fullrank:		bench-fullrank.o ffge.o ffge_32i4.o
 
-test-ffge:		test-ffge.o ffge.o
-
-
+test-ffge:		test-ffge.o ffge.o xoshiro256ss.o
 
 # Targets
 .DEFAULT_GOAL := all
@@ -64,8 +63,9 @@ bench: build-bench
 
 TEST	:= test-ffge
 build-test: $(TEST)
-build-test: CFLAGS	+= -DTEST -g -Og -march=native
+build-test: CFLAGS	+= -DTEST -march=native
 build-test: ASFLAGS	+= -DTEST -g -Fdwarf
+build-test: LDLIBS	+= -lflint
 
 test: build-test
 	@for tt in $(TEST); do						\
