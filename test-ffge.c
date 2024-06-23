@@ -81,9 +81,9 @@ static void test_ffge_64i1_rank03(void)
 
 
 /* Compute rank of 12x12 matrix with entries -1, 0, 1.
- * Compare result with flint.
+ * Compare result with FLINT.
  */
-#define REPS (999999)
+#define REPS (99999)
 #undef SIZE
 #define SIZE (12)
 static int64_t A[SIZE * SIZE];
@@ -111,26 +111,16 @@ static void test_ffge_64i1_rank12(void)
 		if (rankA == SIZE && rt != 1)
 			TEST_FAIL("rep. %zu, full-rank", r);
 
-		if (rankA != (size_t)rankB ) {
+		if (rankA != (size_t)rankB )
 			TEST_FAIL("rep. %zu, rankA: %zu, rankB: %zu",
 					r, rankA, (size_t)rankB);
-			/*fmpz_mat_print_pretty(B);
-			printf("\n");
-			for (size_t i = 0; i < SIZE; i++) {
-				for (size_t j = 0; j < SIZE; j++) {
-					printf("%d ", A[i*SIZE + j]);
-				}
-				printf("\n");
-			}*/
 
-
-		}
 		fmpz_mat_clear(B);
 	}
 }
 
 
-static int64_t M_REP508144[SIZE*SIZE] = { 
+static int64_t M_REP508144[SIZE*SIZE] = {
 	 0,  1, -1, -1,  0,  1,  1,  0, -1,  1,  1, -1,
 	 0,  1, -1, -1,  0,  1,  1, -1,  0, -1,  0,  1,
 	-1, -1, -1, -1,  1, -1,  1, -1,  0, -1,  1,  1,

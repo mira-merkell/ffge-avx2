@@ -28,7 +28,7 @@ LDLIBS	+= -lm
 ffge.o:			ffge.h
 xoshiro256ss.o:		xoshiro256ss.h
 
-bench-fullrank:		bench-fullrank.o ffge.o ffge_32i4.o
+bench-fullrank:		bench-fullrank.o ffge.o ffge_64i4.o
 
 test-ffge:		test-ffge.o ffge.o xoshiro256ss.o
 
@@ -46,7 +46,7 @@ debug: build
 debug: CFLAGS	+= -DDEBUG -g -Og
 debug: ASFLOGS	+= -DDEBUG -g -Fdwarf
 
-PROGS	:= 
+PROGS	:=
 build: $(PROGS)
 
 BENCH	:= bench-fullrank
@@ -55,7 +55,7 @@ build-bench: CFLAGS	+= -DBENCH -O3 -march=native -mavx2
 build-bench: ASFLAGS	+= -DBENCH -Ox
 build-bench: LDLIBS	+= -lflint
 
-bench: build-bench 
+bench: build-bench
 	@for bb in $(BENCH); do 					\
 		./$$bb && echo "$$bb: OK" || ( echo "$$bb: FAIL"; exit 1 ); \
 	done

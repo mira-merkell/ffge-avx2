@@ -50,7 +50,6 @@ uint64_t ffge_pivmtr_64i(size_t n, int64_t *m,
 
 int ffge_64i1(size_t n, int64_t *m, size_t *rnk)
 {
-
 	size_t pc = 0, pr = 0;	// pivot col, row
 	for (pc = 0; pc < n; pc++) {
 		if (ffge_pivmtr_64i(n, m, pr, pc, 1) != 0)
