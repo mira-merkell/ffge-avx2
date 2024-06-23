@@ -65,7 +65,7 @@ ffge_64i8:
 	add	rsi, rcx
 	shl	rsi, 6
 	vmovdqa	ymm2, [rbx + rsi]
-	vmovdqa	ymm6, [rbx + rsi + 32]
+	vmovdqa	ymm6, 32[rbx + rsi]
 .l1:
 	mov	r9, rax
 	add	r9, 1
@@ -75,7 +75,7 @@ ffge_64i8:
 	add	rdi, r8
 	shl	rdi, 6
 	vmovdqa	ymm3, [rbx + rdi]
-	vmovdqa	ymm7, [rbx + rdi + 32]
+	vmovdqa	ymm7, 32[rbx + rdi]
 .l2:
 
 	mov	rsi, r9
@@ -83,7 +83,7 @@ ffge_64i8:
 	add	rsi, r8
 	shl	rsi, 6
 	vpmuldq ymm0, ymm2, [rbx + rsi]
-	vpmuldq ymm4, ymm6, [rbx + rsi + 32]
+	vpmuldq ymm4, ymm6, 32[rbx + rsi]
 	; TODO: modulo prime
 
 	mov	r10, r9
@@ -91,18 +91,18 @@ ffge_64i8:
 	add	r10, rcx
 	shl	r10, 6
 	vpmuldq	ymm1, ymm3, [rbx + r11]
-	vpmuldq	ymm5, ymm7, [rbx + r11]
+	vpmuldq	ymm5, ymm7, 32[rbx + r11]
 
 	vpsubq	ymm0, ymm0, ymm1
 	vpsubq	ymm4, ymm4, ymm5
 	vmovdqa	[rbx + rsi], ymm0
-	vmovdqa	[rbx + rsi + 32], ymm4
+	vmovdqa	32[rbx + rsi], ymm4
 	inc	r9
 	cmp	r9, r12
 	jb	.l2
 
 	vmovdqa [rbx + rdi], ymm10
-	vmovdqa [rbx + rdi + 32], ymm10
+	vmovdqa 32[rbx + rdi], ymm10
 	inc	r8
 	cmp	r8, r12
 	jb	.l1
