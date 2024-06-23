@@ -1,16 +1,20 @@
-ffge-avx2 - fraction-free Gaussian elimination
-==============================================
+ffge-avx2 🦋
+=================================================
 
-Implement a SIMD version of FFGE on a finite field.
-Benchmark against FLINT.
+Fraction-free Gaussian elimination (FFGE).
 
-This repository is WIP 🚧. The vectorized version of FFGE is incomplete.
+* Implement a SIMD version of FFGE on a finite field: `Z mod 2^31 - 1`.
+* Benchmark against FLINT.
+
+This repository is WIP 🚧 The vectorized version of FFGE is incomplete.
 
 Dependencies
 ------------
 
-* CPU supporting AVX2 instruction set extensions
-* libflint>=3.0 - [fast numerics library](https://flintlib.org)
+* CPU with AVX2 instruction set extensions
+* C11 toolchain
+* [NASM](https://nasm.us) assembler
+* [FLINT >= 3.0](https://flintlib.org) to run benchmarks and tests
 
 
 How to use it
@@ -32,7 +36,7 @@ Results:
 
 ### `bench-fullrank`
 
-* Check if a matrix has full rank
+* Compute rank of a 12x12 matrix with elements from `{-1, 0, 1}`.
 * Intel Core i9-12900, 64GB RAM, Ubuntu 22.04, GCC-14.1
 
 ```text
