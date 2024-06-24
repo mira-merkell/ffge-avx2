@@ -1,5 +1,5 @@
 ffge-avx2 🦋
-=================================================
+============
 
 Fraction-free Gaussian elimination (FFGE).
 
