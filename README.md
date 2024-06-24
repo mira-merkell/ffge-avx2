@@ -21,6 +21,12 @@ Dependencies
 How to use it
 -------------
 
+Compile and test:
+
+```bash
+make && make test
+```
+
 To run benchmarks:
 
 ```bash
