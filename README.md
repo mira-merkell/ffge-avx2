@@ -14,7 +14,8 @@ Dependencies
 * CPU with AVX2 instruction set extensions
 * C11 toolchain
 * [NASM](https://nasm.us) assembler
-* [FLINT >= 3.0](https://flintlib.org) to run benchmarks and tests
+* [FLINT >= 3.0](https://flintlib.org) and [GMP](https://gmplib.org/),
+  to run benchmarks and tests
 
 
 How to use it
