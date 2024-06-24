@@ -47,7 +47,7 @@ ffge_64i8:
 	mov	rdi, r12
 	mov	rsi, rbx
 	mov	rdx, rax
-	mov	r9, 8
+	mov	r8, 8
 	call 	ffge_pivmtr_64i
 	mov	r10, rax
 	pop	r8
@@ -57,7 +57,7 @@ ffge_64i8:
 	test	r10, r10
 	jne	.l_pc_out
 	
-	mov	r8, rcx
+	mov	r8, rax
 	add	r8, 1
 
 	mov	rsi, rax
@@ -67,31 +67,31 @@ ffge_64i8:
 	vmovdqa	ymm2, [rbx + rsi]
 	vmovdqa	ymm6, 32[rbx + rsi]
 .l1:
-	mov	r9, rax
+	mov	r9, rcx
 	add	r9, 1
 
 	mov	rdi, rax
 	imul	rdi, r12
-	add	rdi, r8
+	add	rdi, r9
 	shl	rdi, 6
 	vmovdqa	ymm3, [rbx + rdi]
 	vmovdqa	ymm7, 32[rbx + rdi]
 .l2:
 
-	mov	rsi, r9
+	mov	rsi, r8
 	imul	rsi, r12
-	add	rsi, r8
+	add	rsi, r9
 	shl	rsi, 6
 	vpmuldq ymm0, ymm2, [rbx + rsi]
 	vpmuldq ymm4, ymm6, 32[rbx + rsi]
 	; TODO: modulo prime
 
-	mov	r10, r9
+	mov	r10, r8
 	imul	r10, r12
 	add	r10, rcx
 	shl	r10, 6
-	vpmuldq	ymm1, ymm3, [rbx + r11]
-	vpmuldq	ymm5, ymm7, 32[rbx + r11]
+	vpmuldq	ymm1, ymm3, [rbx + r10]
+	vpmuldq	ymm5, ymm7, 32[rbx + r10]
 
 	vpsubq	ymm0, ymm0, ymm1
 	vpsubq	ymm4, ymm4, ymm5
