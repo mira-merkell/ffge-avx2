@@ -16,9 +16,9 @@
 # --------------------------------------------------------------------------- #
 
 CC	?= gcc
-CFLAGS	+= -std=c11 -Wall -Wextra -O2
+CFLAGS	+= -std=c11 -Wall -Wextra -O2 -march=native -mavx2
 AS	:= nasm
-ASFLAGS	+= -felf64 -w+all -w-reloc-rel-dword
+ASFLAGS	+= -felf64 -w+all -w-reloc-rel-dword -Ox
 LDFLAGS	+=
 LDLIBS	+= -lm
 
@@ -28,7 +28,7 @@ LDLIBS	+= -lm
 ffge.o:			ffge.h
 xoshiro256ss.o:		xoshiro256ss.h
 
-bench-fullrank:		bench-fullrank.o ffge.o ffge_64i8.o
+bench-fullrank:		bench-fullrank.o ffge.o ffge_64i8.o xoshiro256ss.o
 
 t-ffge:			t-ffge.o ffge.o xoshiro256ss.o
 
@@ -40,9 +40,9 @@ t-ffge:			t-ffge.o ffge.o xoshiro256ss.o
 	clean debug \
 	test
 
-all: build build-test
+all: build build-bench build-test
 
-debug: build
+debug: all
 debug: CFLAGS	+= -DDEBUG -g -Og
 debug: ASFLOGS	+= -DDEBUG -g -Fdwarf
 
@@ -51,9 +51,9 @@ build: $(PROGS)
 
 BENCH	:= bench-fullrank
 build-bench: build $(BENCH)
-build-bench: CFLAGS	+= -DBENCH -O3 -march=native -mavx2
+build-bench: CFLAGS	+= -DBENCH -O3
 build-bench: ASFLAGS	+= -DBENCH -Ox
-build-bench: LDLIBS	+= -lflint
+build-bench: LDLIBS	+= -lflint -lgmp
 
 bench: build-bench
 	@for bb in $(BENCH); do 					\
@@ -63,9 +63,9 @@ bench: build-bench
 
 TEST	:= t-ffge
 build-test: $(TEST)
-build-test: CFLAGS	+= -DTEST -march=native
-build-test: ASFLAGS	+= -DTEST -g -Fdwarf
-build-test: LDLIBS	+= -lflint
+build-test: CFLAGS	+= -DTEST
+build-test: ASFLAGS	+= -DTEST
+build-test: LDLIBS	+= -lflint -lgmp
 
 test: build-test
 	@for tt in $(TEST); do						\

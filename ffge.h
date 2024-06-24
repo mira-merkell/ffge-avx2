@@ -43,11 +43,11 @@
 int ffge_64i1(size_t n, int64_t *m, size_t *rnk);
 
 /* -------------------------------------------------------------------------- *
- * Perform in-place fraction-free Gaussian elimination on 4 matrices m        *
+ * Perform in-place fraction-free Gaussian elimination on 8 matrices m        *
  * of size n. The underlying field is integers mod FFGE_MAGPRIM.              *
  *                                                                            *
  * The matrices are represented together as a continuous array                *
- * of lenth n*n*4.                                                            *
+ * of lenth n*n*8.                                                            *
  *                                                                            *
  *           +++ We assume the array m is aligned to 32 bytes. +++            *
  *                                                                            *

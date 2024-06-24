@@ -29,8 +29,10 @@
 #include <flint/fmpz_mat.h>
 
 #include "ffge.h"
+#include "xoshiro256ss.h"
 
 #define SEED (1772)
+static struct xoshiro256ss RNG;
 
 /* Keep the number of repetitions divisible by 4 */
 #define REPS (1<<16)
@@ -56,14 +58,14 @@ int main(int argc, char **argv)
 	(void)argc;
 	(void)argv;
 
-	srand(SEED);
+	xoshiro256ss_init(&RNG, SEED);
 
 	/* Initialize matrices to random integers: -1, 0, 1 */
 	for(size_t r = 0; r < REPS; r++) {
     		fmpz_mat_init(A[r], SIZE, SIZE);
 		for (size_t i = 0; i < SIZE; i++) {
 			for (size_t j = 0; j < SIZE; j++) {
-				int64_t a = (int64_t)(rand() % 3) - 1;
+				int64_t a = xoshiro256ss_next(&RNG) % 3 - 1;
 				B[r][i*SIZE + j] = a;
 				fmpz_set_si(fmpz_mat_entry(A[r], i, j), a);
 			}
