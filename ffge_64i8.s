@@ -29,103 +29,70 @@ section .text
 	extern	ffge_pivmtr_64i
 
 ffge_64i8:
-	push	rbx
+	push	r14
+	push	r13
 	push	r12
-	push	rdx
+	push	rbx
+	push	rbp	
+	mov	rbp, rsp
+	sub	rsp, 0x40
+
+	mov	-0x08[rbp], rdi		; size_t n
+	mov	qword -0x10[rbp], 0	; size_t pc: pivot column index
 
 	mov	r12, rdi
-	mov	rbx, rsi
+	shl	r12, 6			; row length in bytes
+	mov	r13, r12
+	imul	r13, rdi		; packed matrix size
 
-	xor	rax, rax
-	xor	rcx, rcx
-	vpxor	ymm10, ymm10
-.l_pc_in:
+	mov	rbx, rsi		; int64_t *m
+
+	xor	rcx, rcx		; pivot row offset
+	xor	rax, rax		; pivot col offset
+	vpxor	ymm15, ymm15
+.l0:
 	push	rax
 	push	rcx
-	push	r8
-	push	r9
-	mov	rdi, r12
+	mov	rdi, -0x08[rbp]
 	mov	rsi, rbx
-	mov	rdx, rax
+	mov	rcx, -0x10[rbp]
+	mov	rdx, -0x10[rbp]
 	mov	r8, 8
 	call 	ffge_pivmtr_64i
-	mov	r10, rax
-	pop	r8
-	pop	r9
 	pop	rcx
 	pop	rax
-	test	r10, r10
-	jne	.l_pc_out
-	
-	mov	r8, rax
-	add	r8, 1
 
-	mov	rsi, rax
-	imul	rsi, r12
-	add	rsi, rcx
-	shl	rsi, 6
-	vmovdqa	ymm2, [rbx + rsi]
-	vmovdqa	ymm6, 32[rbx + rsi]
-.l1:
-	mov	r9, rcx
-	add	r9, 1
+	mov	rsi, rcx
+	add	rsi, rax
 
-	mov	rdi, rax
-	imul	rdi, r12
-	add	rdi, r9
-	shl	rdi, 6
-	vmovdqa	ymm3, [rbx + rdi]
-	vmovdqa	ymm7, 32[rbx + rdi]
+	mov	r8, rcx
+	add	r8, r12
+.l1:	
+	mov	r9, rax
+	add	r9, 0x40
 .l2:
-
-	mov	rsi, r8
-	imul	rsi, r12
-	add	rsi, r9
-	shl	rsi, 6
-	vpmuldq ymm0, ymm2, [rbx + rsi]
-	vpmuldq ymm4, ymm6, 32[rbx + rsi]
-	; TODO: modulo prime
-
-	mov	r10, r8
-	imul	r10, r12
-	add	r10, rcx
-	shl	r10, 6
-	vpmuldq	ymm1, ymm3, [rbx + r10]
-	vpmuldq	ymm5, ymm7, 32[rbx + r10]
-
-	vpsubq	ymm0, ymm0, ymm1
-	vpsubq	ymm4, ymm4, ymm5
-	vmovdqa	[rbx + rsi], ymm0
-	vmovdqa	32[rbx + rsi], ymm4
-	inc	r9
-	cmp	r9, r12
+	add	r9, 0x40
 	jb	.l2
 
-	vmovdqa [rbx + rdi], ymm10
-	vmovdqa 32[rbx + rdi], ymm10
-	inc	r8
+
+	add	r8, r12
 	cmp	r8, r12
 	jb	.l1
-	
-	inc	rax
 
-.l_pc_out:
-	inc	rcx
-	cmp	rcx, r12
-	jb	.l_pc_in
-
-	pop	rdx
-	test	rdx, rdx
-	jz	.rnk_null
-	mov	[rdx], rax
-.rnk_null:
-	sub	r12, rax
-	xor	rax, rax
-	test	r12, r12
-	setz	al
+	add	qword -0x10[rbp], 1
+	add	rax, 0x40 
+	add	rcx, r12
+	cmp	rcx, r13
+	jb	.l0
 
 	vzeroupper
-	pop	r12
+	xor	rax, rax
+
+	mov	rsp, rbp
+	pop	rbp
 	pop	rbx
+	pop	r12
+	pop	r13
+	pop	r14
 	ret
 
