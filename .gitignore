@@ -1,6 +1,7 @@
 bench-fullrank
 
-t-ffge
+t-ffge_32i1
+t-ffge_32i8
 
 tmp/
 

@@ -33,7 +33,7 @@ bench-fullrank:		bench-fullrank.o \
 				ffge_32i1.o ffge_32i8.o ffge_32i8_helpers.o \
 				xoshiro256ss.o
 
-t-ffge:			t-ffge.o ffge_32i1.o xoshiro256ss.o
+t-ffge_32i1:		t-ffge_32i1.o ffge_32i1.o xoshiro256ss.o
 
 # Targets
 .DEFAULT_GOAL := all
@@ -64,7 +64,7 @@ bench: build-bench
 	done
 
 
-TEST	:= t-ffge
+TEST	:= t-ffge_32i1
 build-test: $(TEST)
 build-test: CFLAGS	+= -DTEST
 build-test: ASFLAGS	+= -DTEST
