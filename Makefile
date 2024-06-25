@@ -25,12 +25,15 @@ LDLIBS	+= -lm
 
 # Code dependencies
 
-ffge.o:			ffge.h
+ffge_32i1.o:		ffge.h
+ffge_32i8_helpers.o:	ffge.h
 xoshiro256ss.o:		xoshiro256ss.h
 
-bench-fullrank:		bench-fullrank.o ffge.o ffge_64i8.o xoshiro256ss.o
+bench-fullrank:		bench-fullrank.o \
+				ffge_32i1.o ffge_32i8.o ffge_32i8_helpers.o \
+				xoshiro256ss.o
 
-t-ffge:			t-ffge.o ffge.o xoshiro256ss.o
+t-ffge_32i1:		t-ffge_32i1.o ffge_32i1.o xoshiro256ss.o
 
 # Targets
 .DEFAULT_GOAL := all
@@ -61,7 +64,7 @@ bench: build-bench
 	done
 
 
-TEST	:= t-ffge
+TEST	:= t-ffge_32i1
 build-test: $(TEST)
 build-test: CFLAGS	+= -DTEST
 build-test: ASFLAGS	+= -DTEST

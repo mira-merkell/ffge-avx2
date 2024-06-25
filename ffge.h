@@ -23,7 +23,7 @@
 #include <stdint.h>
 
 /* Magic prime: 2^31 - 1. Integer multiplication fits into int64_t. */
-#define FFGE_MAGPRIM INT64_C(2147483647)
+#define FFGE_MAGPRIM (2147483647)
 
 /* -------------------------------------------------------------------------- *
  * Perform in-place fraction-free Gaussian elimination on matrix m            *
@@ -32,7 +32,7 @@
  * The matrix is represented as a continuous array of n*n elements.           *
  * The matrix element e = m_ij, for 0 <= i,j < n, is accessed with:           *
  *                                                                            *
- *      int64_t e = m[i*n + j];                                               *
+ *      int32_t e = m[i*n + j];                                               *
  *                                                                            *
  * If the pointer rnk is not null, the rank of m is stored.                   *
  *                                                                            *
@@ -40,7 +40,7 @@
  *      0       - if the matrix is singular                                   *
  *      1       - if the matrix is full-rank                                  *
  * -------------------------------------------------------------------------- */
-int ffge_64i1(size_t n, int64_t *m, size_t *rnk);
+int ffge_32i1(size_t n, int32_t *m, size_t *rnk);
 
 /* -------------------------------------------------------------------------- *
  * Perform in-place fraction-free Gaussian elimination on 8 matrices m        *
@@ -61,6 +61,6 @@ int ffge_64i1(size_t n, int64_t *m, size_t *rnk);
  *      0       - if all matrices are singular                                *
  *      1       - if at least one matrix is full-rank                         *
  * -------------------------------------------------------------------------- */
-void ffge_64i8(size_t n, int64_t *m, uint64_t (*rnk)[8]);
+int ffge_32i8(size_t n, int32_t *m, size_t (*rnk)[8]);
 
 #endif /* FFGE_H */
