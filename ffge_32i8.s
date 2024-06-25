@@ -27,7 +27,7 @@ mag_const	dq -9223372032559808509
 
 section .text
 
-	extern	ffge_pivot_32i8
+	extern	ffge_32i8_pivot, ffge_32i8_modprim
 
 ffge_32i8:
 	push	r14
@@ -36,7 +36,8 @@ ffge_32i8:
 	push	rbx
 	push	rbp
 	mov	rbp, rsp
-	sub	rsp, 0x60
+	sub	rsp, 0x80
+	and	rsp, -0x20
 
 	mov	-0x08[rbp], rdi		; size_t n
 	mov	qword -0x10[rbp], 0	; size_t pc: pivot column index
@@ -53,38 +54,39 @@ ffge_32i8:
 	vpbroadcastq ymm14, [mag_const]
 	vpxor	ymm15, ymm15
 
+	; todo: vectorize pivot
 .l0:	push	rax
 	push	rcx
 	mov	rdi, -0x08[rbp]
 	mov	rsi, rbx
 	mov	rcx, -0x10[rbp]
 	mov	rdx, -0x10[rbp]
-	call 	ffge_pivot_32i8
+	call 	ffge_32i8_pivot
 	pop	rcx
 	pop	rax
 
 	mov	rsi, rcx
 	add	rsi, rax
 	vmovdqa ymm0, [rbx + rsi]
-	vpsrldq ymm1, ymm0, 4
+	vpsraq ymm1, ymm0, 4
 
 	mov	r8, rcx
 	add	r8, r12
 .l1:	mov	rsi, r8
 	add	rsi, rax
 	vmovdqa	ymm2, [rbx + rsi]
-	vpsrldq ymm3, ymm1, 4
+	vpsraq ymm3, ymm1, 4
 
 	mov	r9, rax
 	add	r9, 0x20
 .l2:	mov	rdi, rcx
 	add	rdi, r9
 	vmovdqa ymm4, [rbx + rdi]
-	vpsrldq ymm5, ymm3, 4
+	vpsraq ymm5, ymm3, 4
 	mov	rdi, r8
 	add	rdi, r9
 	vmovdqa	ymm6, [rbx + rdi]
-	vpsrldq ymm7, ymm6, 4
+	vpsraq ymm7, ymm6, 4
 
 	vpmuldq	ymm0, ymm0, ymm6
 	vpmuldq	ymm1, ymm1, ymm7
@@ -93,12 +95,25 @@ ffge_32i8:
 	vpsubq	ymm0, ymm0, ymm2
 	vpsubq	ymm1, ymm1, ymm3
 
-	; todo: modulo magic prime
-
-	vpsllq	ymm0, ymm0, 32
-	vpsrldq ymm0, ymm0, 4
-	vpsllq	ymm1, ymm1, 32
-	vpor	ymm0, ymm0, ymm1
+	; todo: vectorize modulo magic prime
+	vmovdqa	[rsp], ymm0
+	vmovdqa 0x20[rsp], ymm1
+	push	rax
+	push	rcx
+	push	r8
+	push	r9
+	push	rsi
+	push	rdi
+	lea	rdi, [rsp]
+	lea	rsi, 0x40[rsp]
+	call	ffge_32i8_modprim
+	pop	rdi
+	pop	rsi
+	pop	r9
+	pop	r8
+	pop	rcx
+	pop	rax
+	vmovdqa	ymm0, 0x40[rsp]
 
 	vmovdqa	[rbx + rdi], ymm0
 	add	r9, 0x20

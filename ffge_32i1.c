@@ -21,7 +21,7 @@
 
 #include "ffge.h"
 
-uint64_t ffge_pivot_32i1(size_t n, int32_t *m, size_t pr, size_t pc)
+uint64_t ffge_32i1_pivot(size_t n, int32_t *m, size_t pr, size_t pc)
 {
 	size_t i = pr;
 	while (i < n && m[i*n + pc] == 0)
@@ -41,37 +41,11 @@ uint64_t ffge_pivot_32i1(size_t n, int32_t *m, size_t pr, size_t pc)
 	return 0;
 }
 
-#define WIDTH (8)
-uint64_t ffge_pivot_32i8(size_t n, int32_t *m, size_t pr, size_t pc)
-{
-	uint64_t fl = 0;
-	for (size_t k = 0; k < WIDTH; k++) {
-		size_t i = pr;
-		while (i < n && m[(i*n + pc)*WIDTH + k] == 0)
-			i++;
-		if (i == n) {
-			fl |= UINT64_C(1) << k;
-			continue;
-		}
-		if (i > pr)
-			for (size_t j = pc; j < n; j++) {
-				const size_t rj = (pr*n + j)*WIDTH + k;
-				const size_t ij = ( i*n + j)*WIDTH + k;
-
-				const int32_t x = m[rj];
-				m[rj] = m[ij];
-				m[ij] = x;
-			}
-	}
-
-	return fl;
-}
-
 int ffge_32i1(size_t n, int32_t *m, size_t *rnk)
 {
 	size_t pc = 0, pr = 0;	// pivot col, row
 	for (pc = 0; pc < n; pc++) {
-		if (ffge_pivot_32i1(n, m, pr, pc) != 0)
+		if (ffge_32i1_pivot(n, m, pr, pc) != 0)
 			continue;
 
 		const int64_t m_rc = m[pr*n + pc];
