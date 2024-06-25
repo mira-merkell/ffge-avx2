@@ -28,7 +28,7 @@ LDLIBS	+= -lm
 ffge.o:			ffge.h
 xoshiro256ss.o:		xoshiro256ss.h
 
-bench-fullrank:		bench-fullrank.o ffge.o ffge_64i8.o xoshiro256ss.o
+bench-fullrank:		bench-fullrank.o ffge.o ffge_32i8.o xoshiro256ss.o
 
 t-ffge:			t-ffge.o ffge.o xoshiro256ss.o
 

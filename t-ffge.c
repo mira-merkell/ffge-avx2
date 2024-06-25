@@ -39,34 +39,34 @@ static int TEST_RT = 0;
 static struct xoshiro256ss RNG;
 
 #define SIZE (3)
-static int64_t MAT_ZER[SIZE * SIZE];
-static int64_t MAT_ONE[SIZE * SIZE] = {
+static int32_t MAT_ZER[SIZE * SIZE];
+static int32_t MAT_ONE[SIZE * SIZE] = {
 	1, 0, 2,
 	1, 0, 2,
 	1, 0, 2
 };
-static int64_t MAT_TWO[SIZE * SIZE] = {
+static int32_t MAT_TWO[SIZE * SIZE] = {
 	0, 0, 2,
 	0, 0, 1,
 	0, 1, 0
 };
-static int64_t MAT_THR[SIZE * SIZE] = {
+static int32_t MAT_THR[SIZE * SIZE] = {
 	1, 0, 0,
 	1, 2, 0,
 	1, 3, 4
 };
 
 
-static void test_ffge_64i1_rank03(void)
+static void test_ffge_32i1_rank03(void)
 {
 
-	int64_t m[SIZE*SIZE];
+	int32_t m[SIZE*SIZE];
 
 #define TEST_MAT(MAT, ex_rt, ex_rnk)	({				\
 		for (int i = 0; i < SIZE*SIZE; i++)			\
 			m[i] = MAT[i];					\
 		size_t rnk;						\
-		int rt = ffge_64i1(SIZE, m, &rnk);			\
+		int rt = ffge_32i1(SIZE, m, &rnk);			\
 		if (rt != ex_rt || rnk != ex_rnk)			\
 			TEST_FAIL("rank: %zu (ex: %d), rt: %d (ex: %d)",\
 				rnk, ex_rnk, rt, ex_rt);		\
@@ -86,24 +86,24 @@ static void test_ffge_64i1_rank03(void)
 #define REPS (99999)
 #undef SIZE
 #define SIZE (12)
-static int64_t A[SIZE * SIZE];
+static int32_t A[SIZE * SIZE];
 
 
-static void test_ffge_64i1_rank12(void)
+static void test_ffge_32i1_rank12(void)
 {
 	for (size_t r = 0; r < REPS; r++) {
 		fmpz_mat_t B;
 		fmpz_mat_init(B, SIZE, SIZE);
 		for (size_t i = 0; i < SIZE; i++) {
 			for (size_t j = 0; j < SIZE; j++) {
-				int64_t x = (xoshiro256ss_next(&RNG) % 3) - 1;
+				int32_t x = (xoshiro256ss_next(&RNG) % 3) - 1;
 				A[i*SIZE + j] = x;
 				fmpz_set_si(fmpz_mat_entry(B, i, j), x);
 			}
 		}
 
 		size_t rankA;
-		int rt = ffge_64i1(SIZE, A, &rankA);
+		int rt = ffge_32i1(SIZE, A, &rankA);
 		int rankB = fmpz_mat_rank(B);
 
 		if (rankA < SIZE && rt != 0)
@@ -120,7 +120,7 @@ static void test_ffge_64i1_rank12(void)
 }
 
 
-static int64_t M_REP508144[SIZE*SIZE] = {
+static int32_t M_REP508144[SIZE*SIZE] = {
 	 0,  1, -1, -1,  0,  1,  1,  0, -1,  1,  1, -1,
 	 0,  1, -1, -1,  0,  1,  1, -1,  0, -1,  0,  1,
 	-1, -1, -1, -1,  1, -1,  1, -1,  0, -1,  1,  1,
@@ -135,10 +135,10 @@ static int64_t M_REP508144[SIZE*SIZE] = {
 	-1,  1,  1, -1, -1,  1,  0,  1,  0,  0, -1,  0,
 };
 
-void test_ffge_64i1_rep508144(void)
+void test_ffge_32i1_rep508144(void)
 {
 	size_t rnk;
-	int rt = ffge_64i1(SIZE, M_REP508144, &rnk);
+	int rt = ffge_32i1(SIZE, M_REP508144, &rnk);
 
 	if (rnk != SIZE || rt != 1)
 		TEST_FAIL("rep. case: 508144");
@@ -152,9 +152,9 @@ int main(int argc, char **argv)
 
 	xoshiro256ss_init(&RNG, SEED);
 
-	test_ffge_64i1_rank03();
-	test_ffge_64i1_rank12();
-	test_ffge_64i1_rep508144();
+	test_ffge_32i1_rank03();
+	test_ffge_32i1_rank12();
+	test_ffge_32i1_rep508144();
 
 	return TEST_RT;
 }

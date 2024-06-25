@@ -19,68 +19,99 @@
 [bits 64]
 default rel
 
-global ffge_64i8
+global ffge_32i8
 
 section .rodata
 
+mag_const	dq -9223372032559808509
 
 section .text
 
-	extern	ffge_pivmtr_64i
+	extern	ffge_pivot_32i8
 
-ffge_64i8:
+ffge_32i8:
 	push	r14
 	push	r13
 	push	r12
 	push	rbx
-	push	rbp	
+	push	rbp
 	mov	rbp, rsp
-	sub	rsp, 0x40
+	sub	rsp, 0x60
 
 	mov	-0x08[rbp], rdi		; size_t n
 	mov	qword -0x10[rbp], 0	; size_t pc: pivot column index
 
 	mov	r12, rdi
-	shl	r12, 6			; row length in bytes
+	shl	r12, 5			; row length in bytes
 	mov	r13, r12
 	imul	r13, rdi		; packed matrix size
 
 	mov	rbx, rsi		; int64_t *m
 
-	xor	rcx, rcx		; pivot row offset
 	xor	rax, rax		; pivot col offset
+	xor	rcx, rcx		; pivot row offset
+	vpbroadcastq ymm14, [mag_const]
 	vpxor	ymm15, ymm15
-.l0:
-	push	rax
+
+.l0:	push	rax
 	push	rcx
 	mov	rdi, -0x08[rbp]
 	mov	rsi, rbx
 	mov	rcx, -0x10[rbp]
 	mov	rdx, -0x10[rbp]
-	mov	r8, 8
-	call 	ffge_pivmtr_64i
+	call 	ffge_pivot_32i8
 	pop	rcx
 	pop	rax
 
 	mov	rsi, rcx
 	add	rsi, rax
+	vmovdqa ymm0, [rbx + rsi]
+	vpsrldq ymm1, ymm0, 4
 
 	mov	r8, rcx
 	add	r8, r12
-.l1:	
+.l1:	mov	rsi, r8
+	add	rsi, rax
+	vmovdqa	ymm2, [rbx + rsi]
+	vpsrldq ymm3, ymm1, 4
+
 	mov	r9, rax
-	add	r9, 0x40
-.l2:
-	add	r9, 0x40
+	add	r9, 0x20
+.l2:	mov	rdi, rcx
+	add	rdi, r9
+	vmovdqa ymm4, [rbx + rdi]
+	vpsrldq ymm5, ymm3, 4
+	mov	rdi, r8
+	add	rdi, r9
+	vmovdqa	ymm6, [rbx + rdi]
+	vpsrldq ymm7, ymm6, 4
+
+	vpmuldq	ymm0, ymm0, ymm6
+	vpmuldq	ymm1, ymm1, ymm7
+	vpmuldq	ymm2, ymm2, ymm4
+	vpmuldq	ymm3, ymm3, ymm5
+	vpsubq	ymm0, ymm0, ymm2
+	vpsubq	ymm1, ymm1, ymm3
+
+	; todo: modulo magic prime
+
+	vpsllq	ymm0, ymm0, 32
+	vpsrldq ymm0, ymm0, 4
+	vpsllq	ymm1, ymm1, 32
+	vpor	ymm0, ymm0, ymm1
+
+	vmovdqa	[rbx + rdi], ymm0
+	add	r9, 0x20
+	cmp	r9, r12
 	jb	.l2
 
-
+	vmovdqa	[rbx + rsi], ymm15
 	add	r8, r12
-	cmp	r8, r12
+	cmp	r8, r13
 	jb	.l1
 
 	add	qword -0x10[rbp], 1
-	add	rax, 0x40 
+	add	rax, 0x20
 	add	rcx, r12
 	cmp	rcx, r13
 	jb	.l0

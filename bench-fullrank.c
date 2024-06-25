@@ -33,25 +33,28 @@
 
 #define SEED (1772)
 static struct xoshiro256ss RNG;
+#define RAND_PM(ptr)	({						\
+		*ptr = (int8_t) (xoshiro256ss_next(&RNG) % 3 - 1);	\
+	})
+
 
 /* Keep the number of repetitions divisible by 4 */
 #define REPS (1<<16)
 #define SIZE (12)
 
-#define TIMEIT(acc, x) ({ 					\
-		struct timespec b, e;				\
-		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &b);	\
-		(x);						\
-		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &e);	\
-		acc += e.tv_nsec - b.tv_nsec;			\
+#define TIMEIT(acc, x) ({ 						\
+		struct timespec b, e;					\
+		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &b);		\
+		(x);							\
+		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &e);		\
+		acc += e.tv_nsec - b.tv_nsec;				\
 	})
 #define MUSREP(acc) ((double)acc * 1.0e-3 / REPS)
 
-static fmpz_mat_t A[REPS];
-static int64_t B[REPS][SIZE * SIZE];
-
-#define WIDTH (8)
-static _Alignas(32) int64_t C[REPS / WIDTH][SIZE * SIZE * WIDTH];
+static fmpz_mat_t A;
+static int32_t B[SIZE * SIZE];
+#define WIDTH	(8)
+static _Alignas(32) int32_t C[SIZE * SIZE * WIDTH];
 
 int main(int argc, char **argv)
 {
@@ -60,54 +63,63 @@ int main(int argc, char **argv)
 
 	xoshiro256ss_init(&RNG, SEED);
 
-	/* Initialize matrices to random integers: -1, 0, 1 */
-	for(size_t r = 0; r < REPS; r++) {
-    		fmpz_mat_init(A[r], SIZE, SIZE);
-		for (size_t i = 0; i < SIZE; i++) {
-			for (size_t j = 0; j < SIZE; j++) {
-				int64_t a = xoshiro256ss_next(&RNG) % 3 - 1;
-				B[r][i*SIZE + j] = a;
-				fmpz_set_si(fmpz_mat_entry(A[r], i, j), a);
-			}
-		}
-	}
-	for (size_t r = 0; r < REPS/WIDTH; r++) {
-		for (size_t i = 0; i < SIZE; i++) {
-			for (size_t j = 0; j < SIZE; j++) {
-				for (size_t k = 0; k < WIDTH; k++)
-					C[r][i*SIZE + j] =
-						B[r*WIDTH + k][i*SIZE + j];
-			}
-		}
-	}
-
-	/*
+	/* Initialize matrices to random integers: -1, 0, 1.
+	 *
 	 * Measure the total time spent on LU.
 	 * Assert our implementation gives correct value.
 	 */
 	uint64_t ta, tb, tc;
 	ta = tb = tc = 0;
 	for (size_t r = 0; r < REPS; r++) {
-		long rta;
-		size_t rnk, rnkC[WIDTH];
+		volatile uint64_t xx = 0;
 
-		TIMEIT(ta, rta = fmpz_mat_rank(A[r]));
-		TIMEIT(tb, ffge_64i1(SIZE, B[r], &rnk));
+		xx++;
 
-		assert((size_t)rta == rnk);
+		fmpz_mat_init(A, SIZE, SIZE);
+		for (size_t i = 0; i < SIZE; i++) {
+			for (size_t j = 0; j < SIZE; j++) {
+				int32_t a;
+				RAND_PM(&a);
 
-		if (r % WIDTH == 0) {
-			TIMEIT(tc, ffge_64i8(SIZE, C[r/WIDTH], &rnkC));
+				B[i*SIZE + j] = a;
+				fmpz_set_si(fmpz_mat_entry(A, i, j), a);
+				for (size_t k = 0; k < WIDTH; k++) {
+					int32_t ak;
+					RAND_PM(&ak);
+
+					C[(i*SIZE + j)*WIDTH + k] = ak;
+				}
+			}
 		}
-	}
-	for (size_t r = 0; r < REPS; r++)
-		fmpz_mat_clear(A[r]);
 
+		xx++;
+
+		long rta;
+		TIMEIT(ta, rta = fmpz_mat_rank(A));
+
+		xx++;
+
+		size_t rnk;
+		int rtb;
+		TIMEIT(tb, rtb = ffge_32i1(SIZE, B, &rnk));
+		(void)rtb;
+
+		xx++;
+
+		int rtc;
+		TIMEIT(tc, rtc = ffge_32i8(SIZE, C, (void *)0));
+		(void)rtc;
+
+		xx++;
+
+		fmpz_mat_clear(A);
+		assert((size_t)rta == rnk);
+	}
 
 	printf("size: %d, reps: %d\n", SIZE, REPS);
 	printf("\tfmpz_mat_rank(A)   %.3f μs\n", MUSREP(ta));
 	printf("\tffge_64i1(B)       %.3f μs\n", MUSREP(tb));
-	printf("\tffge_64i8(C)       %.3f μs\n", MUSREP(tc));
+	printf("\tffge_64i8(C)       %.3f μs\n", MUSREP(tc) / WIDTH);
 
 	return 0;
 }
