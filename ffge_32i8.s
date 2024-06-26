@@ -68,25 +68,25 @@ ffge_32i8:
 	mov	rsi, rcx
 	add	rsi, rax
 	vmovdqa ymm0, [rbx + rsi]
-	vpsraq ymm1, ymm0, 4
+	vpsllq	ymm1, ymm0, 4
 
 	mov	r8, rcx
 	add	r8, r12
 .l1:	mov	rsi, r8
 	add	rsi, rax
 	vmovdqa	ymm2, [rbx + rsi]
-	vpsraq ymm3, ymm1, 4
+	vpsllq  ymm3, ymm1, 4
 
 	mov	r9, rax
 	add	r9, 0x20
 .l2:	mov	rdi, rcx
 	add	rdi, r9
 	vmovdqa ymm4, [rbx + rdi]
-	vpsraq ymm5, ymm3, 4
+	vpsllq	ymm5, ymm3, 4
 	mov	rdi, r8
 	add	rdi, r9
 	vmovdqa	ymm6, [rbx + rdi]
-	vpsraq ymm7, ymm6, 4
+	vpsllq	ymm7, ymm6, 4
 
 	vpmuldq	ymm0, ymm0, ymm6
 	vpmuldq	ymm1, ymm1, ymm7
