@@ -39,22 +39,21 @@ void ffge_32i8_modprim(int64_t *in, int32_t *out)
 
 int32_t modmagprim(int64_t a)
 {
-	uint64_t  x, y, z, c, r;
+	int8_t s, o;
+	uint64_t  b, c, r;
 
-	int8_t s = 1;
-	if (a < 0) {
-		a = -a;
-		s = -1;
-	}
+	s = a >= 0 ? 1 : -1;
+	b = (uint64_t)(a * s);
 
-	x = a				& FFGE_MAGPRIM;
-	y = (a >> 31)			& FFGE_MAGPRIM;
-	z = (a >> 62)			& FFGE_MAGPRIM;
-	c = ((x + y + z) >> 31)		& 1; // carry
-	r = (x + y + z + c)		& FFGE_MAGPRIM;
+	r  = b >> 62;
+	r += b <<  2 >> 33;
+	r += b << 33 >> 33;
+	c  = 1 << 31  & r;
+	r ^= c;
+	r += c >> 31;
 
-	if (r == FFGE_MAGPRIM)
-		r = 0;
+	o = r == FFGE_MAGPRIM ? 0 : 1;
 
-	return (int32_t)r * s;
+	return (int32_t)r * s * o;
 }
+
