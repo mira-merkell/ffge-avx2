@@ -41,17 +41,17 @@ Benchmarks
 
 Results:
 
-### `bench-fullrank`
+### `bench-rank12`
 
 * Compute rank of a 12x12 matrix with elements from `{-1, 0, 1}`.
 * Intel Core i9-12900, 64GB RAM, Ubuntu 22.04, GCC-14.1
 
 ```text
 size: 12, reps: 65536
-	fmpz_mat_rank(A)   2.011 μs
-	ffge_64i1(B)       0.603 μs
-	ffge_64i8(C)       0.316 μs
-bench-fullrank: OK
+	fmpz_mat_rank(A)   2.399 μs
+	ffge_64i1(B)       0.872 μs
+	ffge_64i8(C)       0.503 μs
+bench-rank12: OK
 ```
 
 

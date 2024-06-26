@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * bench-ffge.c: Benchmark for a raw implementation of FFGE.                  *
+ * bench-rank12.c: Benchmark the scalar and vector implementation of FFGE.    *
  *                                                                            *
  * Copyright 2024 ⧉⧉⧉                                                         *
  *                                                                            *

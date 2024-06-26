@@ -29,7 +29,7 @@ ffge_32i1.o:		ffge.h
 ffge_32i8_helpers.o:	ffge.h
 xoshiro256ss.o:		xoshiro256ss.h
 
-bench-fullrank:		bench-fullrank.o \
+bench-rank12:		bench-rank12.o \
 				ffge_32i1.o ffge_32i8.o ffge_32i8_helpers.o \
 				xoshiro256ss.o
 
@@ -52,7 +52,7 @@ debug: ASFLOGS	+= -DDEBUG -g -Fdwarf
 PROGS	:=
 build: $(PROGS)
 
-BENCH	:= bench-fullrank
+BENCH	:= bench-rank12
 build-bench: build $(BENCH)
 build-bench: CFLAGS	+= -DBENCH -O3
 build-bench: ASFLAGS	+= -DBENCH -Ox

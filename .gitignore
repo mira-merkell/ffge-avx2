@@ -1,5 +1,6 @@
-bench-fullrank
+bench-rank12
 
+t-modmagprim
 t-ffge_32i1
 t-ffge_32i8
 
@@ -8,4 +9,5 @@ tmp/
 *.o
 *.d
 
+*.bak
 *.swp
