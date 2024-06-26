@@ -19,7 +19,7 @@ static struct xoshiro256ss RNG;
 
 #define REPS	UINT64_C(9999999)
 
-int32_t modmagprim(uint64_t a);
+int32_t ffge_32i8_modprim(uint64_t a);
 
 int main(void)
 {
@@ -27,11 +27,11 @@ int main(void)
 
 	for (size_t i = 0; i < REPS; i++) {
 
-		int64_t a = (int64_t)xoshiro256ss_next(&RNG);	
-	
+		int64_t a = (int64_t)xoshiro256ss_next(&RNG);
+
 		int32_t x, y;
 		x = (int32_t)(a % FFGE_MAGPRIM);
-		y = modmagprim(a);
+		y = ffge_32i8_modprim(a);
 		if (x != y)
 			TEST_FAIL("rep. %zu, x=%u, y=%u", i, x, y);
 

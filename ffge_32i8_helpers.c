@@ -29,15 +29,7 @@ uint64_t ffge_32i8_pivot(size_t n, int32_t *m, size_t pr, size_t pc)
 	return fl;
 }
 
-void ffge_32i8_modprim(int64_t *in, int32_t *out)
-{
-	for (size_t i = 0; i < WIDTH / 2; i++) {
-		out[i] = (int32_t)(in[2*i] % FFGE_MAGPRIM);
-		out[i + WIDTH] = (int32_t)(in[2*i + 1] % FFGE_MAGPRIM);
-	}
-}
-
-int32_t modmagprim(int64_t a)
+int32_t ffge_32i8_modprim(int64_t a)
 {
 	int8_t s, o;
 	uint64_t  b, c, r;
