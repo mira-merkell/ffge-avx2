@@ -54,13 +54,14 @@ int ffge_32i1(size_t n, int32_t *m, size_t *rnk);
  * If 0 <= i, j < n, and 0 <= k < 8, then m[(i * n + j)*8 + k] is the         *
  * (i,j)-element of the k-th matrix.                                          *
  *                                                                            *
- * If rnk is not null, the funtion stores the rank of each matrix             *
- * in the array.                                                              *
+ * The procedure gives the correct result only for non-singular matrices.     *
+ * If the matrix is singular, it's destroyed and the last diagonal element    *
+ * is set to zero.                                                            *
  *                                                                            *
  * Retruns:                                                                   *
  *      0       - if all matrices are singular                                *
  *      1       - if at least one matrix is full-rank                         *
  * -------------------------------------------------------------------------- */
-int ffge_32i8(size_t n, int32_t *m, size_t (*rnk)[8]);
+int ffge_32i8(size_t n, int32_t *m);
 
 #endif /* FFGE_H */
