@@ -107,7 +107,7 @@ int main(int argc, char **argv)
 		xx++;
 
 		int rtc;
-		TIMEIT(tc, rtc = ffge_32i8(SIZE, C, (void *)0));
+		TIMEIT(tc, rtc = ffge_32i8(SIZE, C));
 		(void)rtc;
 
 		xx++;
